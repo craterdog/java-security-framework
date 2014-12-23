@@ -1,0 +1,114 @@
+<!--
+ ************************************************************************
+ * Copyright (c) Crater Dog Technologies(TM).  All Rights Reserved.     *
+ ************************************************************************
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.        *
+ *                                                                      *
+ * This code is free software; you can redistribute it and/or modify it *
+ * under the terms of The MIT License (MIT), as published by the Open   *
+ * Source Initiative. (See http://opensource.org/licenses/MIT)          *
+ ************************************************************************
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.craterdog.maven-parent-poms</groupId>
+        <artifactId>java-pojo</artifactId>
+        <version>3.7</version>
+        <relativePath />
+    </parent>
+
+    <organization>
+        <name>Crater Dog Technologies(TM)</name>
+        <url>http://craterdog.com</url>
+    </organization>
+
+    <name>Crater Dog Java Certificate Signing and Generation</name>
+    <description>This project defines a tar.gz bundle that contains scripts for generating and signing both private certificate authorities and client certificates from scratch or based on certificate signing requests.</description>
+    <url>https://github.com/craterdog/java-security-framework/wiki</url>
+
+    <groupId>com.craterdog.java-security-framework</groupId>
+    <artifactId>java-certificate-generation</artifactId>
+    <version>3.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <licenses>
+        <license>
+            <name>The MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Derk Norton</name>
+            <email>derk.norton@gmail.com</email>
+            <organization>Crater Dog Technologies(TM)</organization>
+            <organizationUrl>http://craterdog.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <properties>
+        <java-general-utilities-version>3.5</java-general-utilities-version>
+        <java-security-framework-version>3.0</java-security-framework-version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.craterdog.java-security-framework</groupId>
+            <artifactId>java-certificate-management-providers</artifactId>
+            <version>3.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.craterdog</groupId>
+            <artifactId>java-general-utilities</artifactId>
+            <version>${java-general-utilities-version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                  <descriptors>
+                    <descriptor>src/assembly/bin.xml</descriptor>
+                  </descriptors>
+                </configuration>
+                <executions>
+                  <execution>
+                    <phase>package</phase>
+                    <goals>
+                      <goal>single</goal>
+                    </goals>
+                  </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin-version}</version>
+                <configuration>
+                    <detectJavaApiLink>true</detectJavaApiLink>
+                    <links>
+                        <link>http://craterdog.github.io/java-general-utilities/${java-general-utilities-version}/package-list</link>
+                        <link>http://craterdog.github.io/java-security-framework/java-security-utilities/${java-security-framework-version}/package-list</link>
+                        <link>http://craterdog.github.io/java-security-framework/java-secure-messaging-api/${java-security-framework-version}/package-list</link>
+                        <link>http://craterdog.github.io/java-security-framework/java-certificate-management-api/${java-security-framework-version}/package-list</link>
+                    </links>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <scm>
+        <connection>scm:git:git@github.com:craterdog/java-security-framework.git</connection>
+        <developerConnection>scm:git:git@github.com:craterdog/java-security-framework.git</developerConnection>
+        <url>git@github.com:craterdog/java-security-framework.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
+</project>
