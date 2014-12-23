@@ -44,3 +44,10 @@ The source code, javadocs and jar file artifacts for this project are available 
 *Maven Central Repository*. If your project doesn't currently use maven and you would like to,
 click [here](https://github.com/craterdog/maven-parent-poms) to get started down that path quickly.
 
+### Recognition
+_Crater Dog Technologies™_ would like to recognize and thank the following
+companies for their contributions to the development and testing of various
+components within this project:
+
+ * _Blackhawk Network_ (http://blackhawknetwork.com)
+
