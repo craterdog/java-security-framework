@@ -53,7 +53,6 @@
     <properties>
         <java-general-utilities-version>3.5</java-general-utilities-version>
         <bouncy-castle-version>1.46</bouncy-castle-version>
-        <java-security-framework-version>3.0</java-security-framework-version>
     </properties>
 
     <dependencies>
@@ -80,22 +79,6 @@
     </dependencies>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven-javadoc-plugin-version}</version>
-                <configuration>
-                    <detectJavaApiLink>true</detectJavaApiLink>
-                    <links>
-                        <link>http://craterdog.github.io/java-general-utilities/${java-general-utilities-version}/package-list</link>
-                        <link>http://craterdog.github.io/java-security-framework/java-security-utilities/${java-security-framework-version}/package-list</link>
-                        <link>http://craterdog.github.io/java-security-framework/java-secure-messaging-api/${java-security-framework-version}/package-list</link>
-                        <link>http://craterdog.github.io/java-security-framework/java-certificate-management-api/${java-security-framework-version}/package-list</link>
-                    </links>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 
     <scm>
