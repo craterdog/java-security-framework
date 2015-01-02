@@ -42,8 +42,6 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     static private final String HASH_ALGORITHM = "SHA256";
     static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = "SHA1with" + ASYMMETRIC_KEY_TYPE;
     static private final String ASYMMETRIC_ENCRYPTION_ALGORITHM = ASYMMETRIC_KEY_TYPE + "/NONE/OAEPWithSHA256AndMGF1Padding";
-    // the interim alorithm is there to support Barclays Bank until after August, 2014, then it should be removed
-    static private final String INTERIM_ASYMMETRIC_ENCRYPTION_ALGORITHM = ASYMMETRIC_KEY_TYPE + "/NONE/PKCS1Padding";
     static private final String SYMMETRIC_KEY_TYPE = "AES";
     static private final int SYMMETRIC_KEY_SIZE = 128;
     static private final String SYMMETRIC_ENCRYPTION_ALGORITHM = SYMMETRIC_KEY_TYPE + "/CBC/PKCS7Padding";
@@ -75,7 +73,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     @Override
     public String getAsymmetricEncryptionAlgorithm() {
         // this should be changed to the preferred algorithm after August, 2014
-        return INTERIM_ASYMMETRIC_ENCRYPTION_ALGORITHM;
+        return ASYMMETRIC_ENCRYPTION_ALGORITHM;
     }
 
 
@@ -92,7 +90,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
-    public final String getHashAlgorithm() {
+    public String getHashAlgorithm() {
         return HASH_ALGORITHM;
     }
 
@@ -159,7 +157,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         try {
             logger.entry();
             // this should change to the real algorithm (with OAEP padding) after August, 2014
-            Cipher cipher = Cipher.getInstance(INTERIM_ASYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
+            Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             byte[] encryptedKey = cipher.doFinal(sharedKey.getEncoded());
             logger.exit();
@@ -178,17 +176,9 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         try {
             logger.entry();
             byte[] decryptedKey;
-            try {
-                // try the preferred algorithm (with OAEP padding) first
-                Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
-                cipher.init(Cipher.DECRYPT_MODE, privateKey);
-                decryptedKey = cipher.doFinal(encryptedKey);
-            } catch (BadPaddingException e) {
-                // if that fails use the interim algorithm (with PKCS1 padding), this block should be removed after August, 2014!
-                Cipher cipher = Cipher.getInstance(INTERIM_ASYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
-                cipher.init(Cipher.DECRYPT_MODE, privateKey);
-                decryptedKey = cipher.doFinal(encryptedKey);
-            }
+            Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            decryptedKey = cipher.doFinal(encryptedKey);
             SecretKey sharedKey = new SecretKeySpec(decryptedKey, SYMMETRIC_ENCRYPTION_ALGORITHM);
             logger.exit();
             return sharedKey;
