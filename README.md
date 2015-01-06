@@ -3,7 +3,7 @@
 ### A Simple to Use Java Security Framework
 The Java security APIs define a very powerful framework for implementing common security related tasks
 like key generation, signing and verifying documents, and encrypting and decrypting data. As with all
-low level frameworks, it provides a great deal of flexibility in chosing the algorithms and key sizes
+low level frameworks, it provides a great deal of flexibility in choosing the algorithms and key sizes
 to be used for these tasks. However, this flexibility can cause a significant amount of confusion for
 anyone who is not a security expert.
 
