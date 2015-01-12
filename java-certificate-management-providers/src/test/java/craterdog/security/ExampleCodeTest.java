@@ -9,12 +9,7 @@
  ************************************************************************/
 package craterdog.security;
 
-import craterdog.primitives.Tag;
 import craterdog.utils.RandomUtils;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -24,7 +19,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
