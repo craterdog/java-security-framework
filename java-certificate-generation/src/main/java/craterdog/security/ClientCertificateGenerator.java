@@ -77,7 +77,7 @@ public class ClientCertificateGenerator {
             RsaCertificateManager manager = new RsaCertificateManager();
             KeyStore caKeyStore = manager.retrieveKeyStore(caInput, caPassword);
             PrivateKey caPrivateKey = manager.retrievePrivateKey(caKeyStore, CA_ALIAS, caPassword);
-            X509Certificate caPublicKey = manager.retrieveCertificate(caKeyStore, CA_ALIAS);
+            X509Certificate caCertificate = manager.retrieveCertificate(caKeyStore, CA_ALIAS);
 
             logger.info("Generating a new key pair for the client certificate...");
             KeyPair clientKeyPair = manager.generateKeyPair();
@@ -90,14 +90,14 @@ public class ClientCertificateGenerator {
                     * 60L /*seconds*/ * 1000L /*milliseconds*/;
             BigInteger serialNumber = new BigInteger(new Tag(certificateId).toBytes());
             X509Certificate clientCertificate = manager.createCertificate(caPrivateKey,
-                    caPublicKey, clientPublicKey, subject, serialNumber, lifetime);
-            clientCertificate.verify(caPublicKey.getPublicKey());
+                    caCertificate, clientPublicKey, subject, serialNumber, lifetime);
+            clientCertificate.verify(caCertificate.getPublicKey());
 
             logger.info("Storing the new client certificate and private key in a key store...");
             char[] clientPassword = new Tag().toString().toCharArray();
             List<X509Certificate> certificates = new ArrayList<>();
             certificates.add(clientCertificate);
-            certificates.add(caPublicKey);
+            certificates.add(caCertificate);
             KeyStore clientKeyStore = manager.createPkcs12KeyStore(CLIENT_ALIAS, clientPassword,
                     clientPrivateKey, certificates);
 
