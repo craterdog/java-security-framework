@@ -56,10 +56,10 @@ public abstract class MessageCryptex implements MessageEncryption, MessageDecryp
         CipherOutputStream cipherOutput = null;
         byte[] buffer = new byte[2048];
         try {
-            logger.info("Creating a special output stream to do the work...");
+            logger.debug("Creating a special output stream to do the work...");
             cipherOutput = encryptionOutputStream(sharedKey, output);
 
-            logger.info("Reading from the input and writing to the encrypting output stream...");
+            logger.debug("Reading from the input and writing to the encrypting output stream...");
             // Can't use IOUtils.copy(input, cipherOutput) here because need to purge buffer later...
             int bytesRead;
             while ((bytesRead = input.read(buffer)) != -1) {
@@ -67,7 +67,7 @@ public abstract class MessageCryptex implements MessageEncryption, MessageDecryp
             }
             cipherOutput.flush();
         } finally {
-            logger.info("Purging any plaintext hanging around in memory...");
+            logger.debug("Purging any plaintext hanging around in memory...");
             Arrays.fill(buffer, (byte) 0);
 
             if (cipherOutput != null) cipherOutput.close();
@@ -81,10 +81,10 @@ public abstract class MessageCryptex implements MessageEncryption, MessageDecryp
         logger.entry();
         CipherInputStream cipherInput = null;
         try {
-            logger.info("Creating a special input stream to do the work...");
+            logger.debug("Creating a special input stream to do the work...");
             cipherInput = decryptionInputStream(sharedKey, input);
 
-            logger.info("Reading bytes, decrypting them, and writing them out...");
+            logger.debug("Reading bytes, decrypting them, and writing them out...");
             IOUtils.copy(cipherInput, output);
             output.flush();
         } finally {

@@ -17,12 +17,15 @@ import org.slf4j.ext.XLoggerFactory;
  * This class provides a tool for encrypting configuration properties.  It can be run using the
  * script that comes with the distribution bundle (.tar.gz file).  The result will be the encrypted
  * and base 32 encoded property value with the required encryption prefix.  For example:
- * * <pre>
+ * <pre>
  * {@code
- * scripts$ ./encrypt-property.sh mypassword
+ * $ encrypt-property.sh mypassword
  *   Property Value: mypassword
- *   Encrypted Value: {AES-128}QJTZAB1R1NDDVVAHZBB2VSP1R0
- * scripts$
+ *   Creating and initializing the encryption engine...
+ *   Creating a special output stream to do the work...
+ *   Reading from the input and writing to the encrypting output stream...
+ *   Purging any plaintext hanging around in memory...
+ *   Encrypted Value: {AES-128}UqlfuKDglzWM7VamTIb8XA==
  * }
  * </pre>
  *

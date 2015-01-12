@@ -197,13 +197,13 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         try {
             logger.entry();
 
-            logger.info("Creating and initializing the encryption engine...");
+            logger.debug("Creating and initializing the encryption engine...");
             Cipher cipher = Cipher.getInstance(SYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
             byte[] fixedIV = new byte[16];  // all zeros
             AlgorithmParameterSpec ivSpec = new IvParameterSpec(fixedIV);
             cipher.init(Cipher.ENCRYPT_MODE, sharedKey, ivSpec);
 
-            logger.info("Creating a special output stream to do the work...");
+            logger.debug("Creating a special output stream to do the work...");
             CipherOutputStream cipherOutputStream = new CipherOutputStream(output, cipher);
 
             logger.exit();
@@ -223,13 +223,13 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         try {
             logger.entry();
 
-            logger.info("Creating and initializing the decryption engine...");
+            logger.debug("Creating and initializing the decryption engine...");
             Cipher cipher = Cipher.getInstance(SYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
             byte[] fixedIV = new byte[16];  // all zeros
             AlgorithmParameterSpec ivSpec = new IvParameterSpec(fixedIV);
             cipher.init(Cipher.DECRYPT_MODE, sharedKey, ivSpec);
 
-            logger.info("Creating a special input stream to do the work...");
+            logger.debug("Creating a special input stream to do the work...");
             CipherInputStream cipherInputStream = new CipherInputStream(input, cipher);
 
             logger.exit();

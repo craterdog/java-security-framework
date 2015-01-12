@@ -9,7 +9,6 @@
  ************************************************************************/
 package craterdog.security;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
@@ -25,12 +24,8 @@ import javax.crypto.SecretKey;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 
 /**
@@ -38,18 +33,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *
  * @author Derk Norton
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:META-INF/spring/craterdog-secure-messaging-providers.xml"})
-public class RsaAesMessageCryptexTest {
+public class ExampleCodeTest {
 
-    static XLogger logger = XLoggerFactory.getXLogger(RsaAesMessageCryptexTest.class);
+    static XLogger logger = XLoggerFactory.getXLogger(ExampleCodeTest.class);
 
     /**
      * Log a message at the beginning of the tests.
      */
     @BeforeClass
     public static void setUpClass() {
-        logger.info("Running RsaAesMessageCrytex Unit Tests...");
+        logger.info("Running Example Code Unit Tests...");
     }
 
 
@@ -58,37 +51,7 @@ public class RsaAesMessageCryptexTest {
      */
     @AfterClass
     public static void tearDownClass() {
-        logger.info("RsaAesMessageCrytex Unit Tests Completed.");
-    }
-
-
-    @Autowired
-    private MessageCryptex cryptex;
-
-
-    /**
-     * This test encrypts a test string and then decrypts it and compares the two to make sure
-     * that they are the same.
-     */
-    @Test
-    public void testStringRoundTrip() {
-        logger.info("Testing round trip string encryption...");
-
-        logger.info("Generating a shared key...");
-        SecretKey sharedKey = cryptex.generateSharedKey();
-
-        logger.info("Encrypting a test string with the shared key...");
-        String string = "This is a test string.";
-        byte[] encryptedString = cryptex.encryptString(sharedKey, string);
-
-        logger.info("Decrypting the encrypted string with the shared key...");
-        String decryptedString = cryptex.decryptString(sharedKey, encryptedString);
-
-        logger.info("Comparing the two strings...");
-        assertEquals("The decrypted string was different from the original string",
-                string, decryptedString);
-
-        logger.info("Round trip string encryption test completed.");
+        logger.info("Example Code Unit Tests Completed.");
     }
 
 
@@ -113,6 +76,7 @@ public class RsaAesMessageCryptexTest {
         PublicKey receiverPublicKey = receiverPair.getPublic();
 
         logger.info("Sender generating shared session key...");
+        MessageCryptex cryptex = new RsaAesMessageCryptex();
         SecretKey sessionKey = cryptex.generateSharedKey();
 
         logger.info("Sender encrypting session key...");
@@ -133,7 +97,7 @@ public class RsaAesMessageCryptexTest {
         ByteArrayOutputStream encryptedOutput = new ByteArrayOutputStream();
         cryptex.encryptStream(sessionKey, clearInput, encryptedOutput);
 
-        logger.info("Sender sending the encrypted request to the receiver...");
+        logger.info("Sending the encrypted request to the receiver...");
         InputStream encryptedInput = new ByteArrayInputStream(encryptedOutput.toByteArray());
 
         logger.info("Receiver decoding the encrypted session key and its signature...");
@@ -151,8 +115,7 @@ public class RsaAesMessageCryptexTest {
         logger.info("Receiver decrypting the request using the session key...");
         ByteArrayOutputStream decryptedOutput = new ByteArrayOutputStream();
         cryptex.decryptStream(sessionKey, encryptedInput, decryptedOutput);
-        assertEquals("The decrypted request was different from the original request",
-                request, new String(decryptedOutput.toByteArray()));
+        logger.info("The decrypted request is: \"{}\"", new String(decryptedOutput.toByteArray()));
 
         logger.info("Receiver handling the request and preparing the response...");
         String response = "This is the response...";
@@ -162,16 +125,17 @@ public class RsaAesMessageCryptexTest {
         encryptedOutput = new ByteArrayOutputStream();
         cryptex.encryptStream(sessionKey, clearInput, encryptedOutput);
 
-        logger.info("Receiver sending the encrypted response to the sender...");
+        logger.info("Sending the encrypted response back to the sender...");
         encryptedInput = new ByteArrayInputStream(encryptedOutput.toByteArray());
 
         logger.info("Sender decrypting the response using the session key...");
         decryptedOutput = new ByteArrayOutputStream();
         cryptex.decryptStream(sessionKey, encryptedInput, decryptedOutput);
-        assertEquals("The decrypted response was different from the original response",
-                response, new String(decryptedOutput.toByteArray()));
+        logger.info("The decrypted response is: \"{}\"", new String(decryptedOutput.toByteArray()));
+
 
         logger.info("Round trip message encryption test completed.");
+
     }
 
 }
