@@ -136,7 +136,7 @@ public interface MessageEncryption {
     public CipherOutputStream encryptionOutputStream(SecretKey sharedKey, OutputStream output) throws IOException;
 
     /**
-     * This method returns a one-way hash of the specified string.
+     * This method returns a base 64 encoded SHA256 one-way hash of the specified string.
      *
      * @param string The string to be hashed.
      * @return A base 64 encoded one-way hash of the string.

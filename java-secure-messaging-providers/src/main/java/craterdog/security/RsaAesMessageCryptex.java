@@ -243,14 +243,11 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     }
 
 
-    // The salt is added to the string being hashed to prevent dictionary attacks on the hash value.
-    static private final String SALT = "M4QGNTG3SD5JD0RMSTNMZHTXBQBYXCMT";
-
     @Override
     public String hashString(String string) {
         try {
             logger.entry();
-            byte[] bytes = (string + SALT).getBytes();
+            byte[] bytes = (string).getBytes();
             MessageDigest hasher = MessageDigest.getInstance(HASH_ALGORITHM);
             byte[] hash = hasher.digest(bytes);
             String hashString = Base64Utils.encode(hash);
