@@ -10,6 +10,7 @@
 package craterdog.security;
 
 import craterdog.utils.Base64Utils;
+import craterdog.utils.RandomUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,7 +19,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.security.Signature;
 import java.security.spec.AlgorithmParameterSpec;
@@ -138,8 +138,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         try {
             logger.entry();
             KeyGenerator keyGenerator = KeyGenerator.getInstance(SYMMETRIC_KEY_TYPE, PROVIDER_NAME);
-            SecureRandom randomGenerator = new SecureRandom();
-            keyGenerator.init(SYMMETRIC_KEY_SIZE, randomGenerator);
+            keyGenerator.init(SYMMETRIC_KEY_SIZE, RandomUtils.generator);
             SecretKey sharedKey = keyGenerator.generateKey();
             logger.exit();
             return sharedKey;

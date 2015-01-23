@@ -19,6 +19,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -35,43 +37,61 @@ public class ExampleCodeTest {
 
 
     /**
+     * Log a message at the beginning of the tests.
+     */
+    @BeforeClass
+    public static void setUpClass() {
+        logger.info("Running Example Code Unit Tests...");
+    }
+
+
+    /**
+     * Log a message at the end of the tests.
+     */
+    @AfterClass
+    public static void tearDownClass() {
+        logger.info("Example Code Unit Tests Completed.");
+    }
+
+
+    /**
      * Round trip tests of all the methods.
      * @throws java.lang.Exception
      */
     @Test
-    public void testRoundTrips() throws Exception {
-        logger.entry();
+    public void testExampleCode() throws Exception {
+        logger.info("Testing the example code...");
         RsaCertificateManager manager = new RsaCertificateManager();
 
-        logger.info("Generating a new key pair for the CA.");
+        logger.info("  Generating a new key pair for the CA.");
         KeyPair caKeyPair = manager.generateKeyPair();
         PublicKey caPublicKey = caKeyPair.getPublic();
         PrivateKey caPrivateKey = caKeyPair.getPrivate();
 
-        logger.info("Generating a self-signed private CA certificate.");
+        logger.info("  Generating a self-signed private CA certificate.");
         String caSubject = "CN=Crater Dog Technologies™ Private Certificate Authority, O=Crater Dog Technologies™, C=US";
         BigInteger caSerialNumber = new BigInteger(RandomUtils.generateRandomBytes(16));
         long lifetime = 30L /*years*/ * 365L /*days*/ * 24L /*hours*/ * 60L /*minutes*/ * 60L /*seconds*/ * 1000L /*milliseconds*/;
         X509Certificate caCertificate = manager.createCertificateAuthority(caPrivateKey, caPublicKey, caSubject, caSerialNumber, lifetime);
         caCertificate.verify(caPublicKey);
 
-        logger.info("Creating the CA key store.");
+        logger.info("  Creating the CA key store.");
         String caKeyName = "Signer";
         char[] caPassword = "verysecret".toCharArray();
         KeyStore caKeyStore = manager.createPkcs12KeyStore(caKeyName, caPassword, caPrivateKey, caCertificate);
 
-        logger.info("Generating a new key pair for the client.");
+        logger.info("  Generating a new key pair for the client.");
         KeyPair clientKeyPair = manager.generateKeyPair();
         PublicKey clientPublicKey = clientKeyPair.getPublic();
         PrivateKey clientPrivateKey = clientKeyPair.getPrivate();
 
-        logger.info("Generating a private CA-signed client certificate.");
+        logger.info("  Generating a private CA-signed client certificate.");
         String clientSubject = "CN=Derk Norton, O=Crater Dog Technologies™, OU=Engineering";
         BigInteger clientSerialNumber = new BigInteger(RandomUtils.generateRandomBytes(16));
         X509Certificate clientCertificate = manager.createCertificate(caPrivateKey, caCertificate, clientPublicKey, clientSubject, clientSerialNumber, lifetime);
         clientCertificate.verify(caCertificate.getPublicKey());
 
-        logger.info("Creating the client key store.");
+        logger.info("  Creating the client key store.");
         String clientKeyName = "Client";
         char[] clientPassword = "kindasecret".toCharArray();
         List<X509Certificate> certificates = new ArrayList<>();
@@ -79,19 +99,19 @@ public class ExampleCodeTest {
         certificates.add(caCertificate);
         KeyStore clientKeyStore = manager.createPkcs12KeyStore(clientKeyName, clientPassword, clientPrivateKey, certificates);
 
-        logger.info("Creating a new certificate signing request...");
+        logger.info("  Creating a new certificate signing request...");
         KeyPair keyPair = manager.generateKeyPair();
         PrivateKey privateKey = keyPair.getPrivate();
         PublicKey publicKey = keyPair.getPublic();
         String subject = "CN=craterdog.com, O=Crater Dog Technologies™, OU=Engineering, ST=Colorado, C=USA";
         PKCS10CertificationRequest csr = manager.createSigningRequest(privateKey, publicKey, subject);
 
-        logger.info("Signing the certificate...");
+        logger.info("  Signing the certificate...");
         BigInteger serialNumber = new BigInteger(RandomUtils.generateRandomBytes(16));
         X509Certificate certificate = manager.signCertificateRequest(caPrivateKey, caCertificate, csr, serialNumber, lifetime);
         certificate.verify(caPublicKey);
 
-        logger.exit();
+        logger.info("Example code testing completed.");
     }
 
 }

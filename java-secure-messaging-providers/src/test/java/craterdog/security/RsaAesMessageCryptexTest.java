@@ -74,17 +74,17 @@ public class RsaAesMessageCryptexTest {
     public void testStringRoundTrip() {
         logger.info("Testing round trip string encryption...");
 
-        logger.info("Generating a shared key...");
+        logger.info("  Generating a shared key...");
         SecretKey sharedKey = cryptex.generateSharedKey();
 
-        logger.info("Encrypting a test string with the shared key...");
+        logger.info("  Encrypting a test string with the shared key...");
         String string = "This is a test string.";
         byte[] encryptedString = cryptex.encryptString(sharedKey, string);
 
-        logger.info("Decrypting the encrypted string with the shared key...");
+        logger.info("  Decrypting the encrypted string with the shared key...");
         String decryptedString = cryptex.decryptString(sharedKey, encryptedString);
 
-        logger.info("Comparing the two strings...");
+        logger.info("  Comparing the two strings...");
         assertEquals("The decrypted string was different from the original string",
                 string, decryptedString);
 
@@ -103,7 +103,7 @@ public class RsaAesMessageCryptexTest {
     public void testMessageRoundTrip() throws IOException {
         logger.info("Testing round trip message encryption...");
 
-        logger.info("Generating the public/private key pairs...");
+        logger.info("  Generating the public/private key pairs...");
         RsaCertificateManager manager = new RsaCertificateManager();
         KeyPair senderPair = manager.generateKeyPair();
         PrivateKey senderPrivateKey = senderPair.getPrivate();
@@ -112,60 +112,60 @@ public class RsaAesMessageCryptexTest {
         PrivateKey receiverPrivateKey = receiverPair.getPrivate();
         PublicKey receiverPublicKey = receiverPair.getPublic();
 
-        logger.info("Sender generating shared session key...");
+        logger.info("  Sender generating shared session key...");
         SecretKey sessionKey = cryptex.generateSharedKey();
 
-        logger.info("Sender encrypting session key...");
+        logger.info("  Sender encrypting session key...");
         byte[] encryptedSessionKey = cryptex.encryptSharedKey(receiverPublicKey, sessionKey);
 
-        logger.info("Sender signing the encrypted session key...");
+        logger.info("  Sender signing the encrypted session key...");
         byte[] signature = cryptex.signBytes(senderPrivateKey, encryptedSessionKey);
 
-        logger.info("Sender base 64 encoding the encrypted key and signature...");
+        logger.info("  Sender base 64 encoding the encrypted key and signature...");
         String encodedSessionKey = cryptex.encodeBytes(encryptedSessionKey);
-        logger.info("  EncodedSessionKey: " + encodedSessionKey);
+        logger.info("    EncodedSessionKey: " + encodedSessionKey);
         String encodedSignature = cryptex.encodeBytes(signature);
-        logger.info("  EncodedSignature: " + encodedSignature);
+        logger.info("    EncodedSignature: " + encodedSignature);
 
-        logger.info("Sender encrypting the request using session key...");
+        logger.info("  Sender encrypting the request using session key...");
         String request = "This is a request...";
         InputStream clearInput = new ByteArrayInputStream(request.getBytes("UTF-8"));
         ByteArrayOutputStream encryptedOutput = new ByteArrayOutputStream();
         cryptex.encryptStream(sessionKey, clearInput, encryptedOutput);
 
-        logger.info("Sender sending the encrypted request to the receiver...");
+        logger.info("  Sender sending the encrypted request to the receiver...");
         InputStream encryptedInput = new ByteArrayInputStream(encryptedOutput.toByteArray());
 
-        logger.info("Receiver decoding the encrypted session key and its signature...");
+        logger.info("  Receiver decoding the encrypted session key and its signature...");
         signature = cryptex.decodeString(encodedSignature);
         encryptedSessionKey = cryptex.decodeString(encodedSessionKey);
 
-        logger.info("Receiver validating the signature of the encrypted session key...");
+        logger.info("  Receiver validating the signature of the encrypted session key...");
         if (! cryptex.bytesAreValid(senderPublicKey, encryptedSessionKey, signature)) {
             fail("The session key signature was invalid.");
         }
 
-        logger.info("Receiver decrypting the session key...");
+        logger.info("  Receiver decrypting the session key...");
         sessionKey = cryptex.decryptSharedKey(receiverPrivateKey, encryptedSessionKey);
 
-        logger.info("Receiver decrypting the request using the session key...");
+        logger.info("  Receiver decrypting the request using the session key...");
         ByteArrayOutputStream decryptedOutput = new ByteArrayOutputStream();
         cryptex.decryptStream(sessionKey, encryptedInput, decryptedOutput);
         assertEquals("The decrypted request was different from the original request",
                 request, new String(decryptedOutput.toByteArray()));
 
-        logger.info("Receiver handling the request and preparing the response...");
+        logger.info("  Receiver handling the request and preparing the response...");
         String response = "This is the response...";
 
-        logger.info("Receiver encrypting the response using the session key...");
+        logger.info("  Receiver encrypting the response using the session key...");
         clearInput = new ByteArrayInputStream(response.getBytes("UTF-8"));
         encryptedOutput = new ByteArrayOutputStream();
         cryptex.encryptStream(sessionKey, clearInput, encryptedOutput);
 
-        logger.info("Receiver sending the encrypted response to the sender...");
+        logger.info("  Receiver sending the encrypted response to the sender...");
         encryptedInput = new ByteArrayInputStream(encryptedOutput.toByteArray());
 
-        logger.info("Sender decrypting the response using the session key...");
+        logger.info("  Sender decrypting the response using the session key...");
         decryptedOutput = new ByteArrayOutputStream();
         cryptex.decryptStream(sessionKey, encryptedInput, decryptedOutput);
         assertEquals("The decrypted response was different from the original response",

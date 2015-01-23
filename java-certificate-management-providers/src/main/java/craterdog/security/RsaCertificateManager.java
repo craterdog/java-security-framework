@@ -9,6 +9,7 @@
  ************************************************************************/
 package craterdog.security;
 
+import craterdog.utils.RandomUtils;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -88,7 +89,7 @@ public final class RsaCertificateManager extends CertificateManager {
         try {
             logger.entry();
             KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance(ASYMMETRIC_KEY_TYPE);
-            keyGenerator.initialize(ASYMMETRIC_KEY_SIZE, new SecureRandom());
+            keyGenerator.initialize(ASYMMETRIC_KEY_SIZE, RandomUtils.generator);
             KeyPair keyPair = keyGenerator.generateKeyPair();
             logger.exit();
             return keyPair;

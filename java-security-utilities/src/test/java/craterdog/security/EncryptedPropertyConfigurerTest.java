@@ -72,9 +72,10 @@ public class EncryptedPropertyConfigurerTest {
         String expResult = "private";
         EncryptedPropertyConfigurer configurer = new EncryptedPropertyConfigurer();
         String propertyValue = configurer.encryptPropertyValue(expResult);
-        logger.info("   propertyValue: {}", propertyValue);
+        logger.info("  PropertyValue: {}", propertyValue);
         String result = configurer.convertPropertyValue(propertyValue);
         assertEquals(expResult, result);
+        logger.info("Round trip conversion of encrypted property testing completed.");
     }
 
     @Value("${unencrypted.value}") String unencryptedValue;

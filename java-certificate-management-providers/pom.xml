@@ -10,13 +10,12 @@
  ************************************************************************
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>com.craterdog.maven-parent-poms</groupId>
         <artifactId>java-pojo</artifactId>
-        <version>3.7</version>
+        <version>3.9</version>
         <relativePath />
     </parent>
 
@@ -51,8 +50,8 @@
     </developers>
 
     <properties>
-        <java-general-utilities-version>3.5</java-general-utilities-version>
-        <java-primitive-types-version>3.3</java-primitive-types-version>
+        <java-general-utilities-version>3.6</java-general-utilities-version>
+        <java-primitive-types-version>3.4</java-primitive-types-version>
         <bouncy-castle-version>1.46</bouncy-castle-version>
     </properties>
 

@@ -10,13 +10,12 @@
  ************************************************************************
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>com.craterdog.maven-parent-poms</groupId>
-        <artifactId>root</artifactId>
-        <version>3.7</version>
+        <artifactId>java-aggregator</artifactId>
+        <version>3.9</version>
     </parent>
 
     <organization>
@@ -49,10 +48,6 @@
         </developer>
     </developers>
 
-    <properties>
-        <maven-javadoc-plugin-version>2.9.1</maven-javadoc-plugin-version>
-    </properties>
-
     <modules>
         <module>java-secure-messaging-api</module>
         <module>java-secure-messaging-providers</module>
@@ -62,33 +57,6 @@
         <module>java-security-utilities</module>
         <module>java-property-encryptor</module>
     </modules>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>${maven-javadoc-plugin-version}</version>
-                        <configuration>
-                            <detectJavaApiLink>true</detectJavaApiLink>
-                            <aggregate>true</aggregate>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>generate-javadoc</id>
-                                <goals>
-                                    <goal>aggregate-jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <scm>
         <connection>scm:git:git@github.com:craterdog/java-security-framework.git</connection>
