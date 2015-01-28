@@ -46,7 +46,7 @@ public class RsaCertificateManagerTest {
      */
     @BeforeClass
     public static void setUpClass() {
-        logger.info("Running RsaCertificateManager Unit Tests...");
+        logger.info("Running RsaCertificateManager Unit Tests...\n");
     }
 
 
@@ -55,7 +55,7 @@ public class RsaCertificateManagerTest {
      */
     @AfterClass
     public static void tearDownClass() {
-        logger.info("RsaCertificateManager Unit Tests Completed.");
+        logger.info("RsaCertificateManager Unit Tests Completed.\n");
     }
 
 
@@ -156,7 +156,7 @@ public class RsaCertificateManagerTest {
         X509Certificate certificate = manager.signCertificateRequest(caPrivateKey, caCertificate, csr, serialNumber, lifetime);
         certificate.verify(caPublicKey);
 
-        logger.info("RSA certificate manager round trip testing completed.");
+        logger.info("RSA certificate manager round trip testing completed.\n");
     }
 
 }

@@ -50,7 +50,7 @@ public class EncryptedPropertyConfigurerTest {
      */
     @BeforeClass
     public static void setUpClass() {
-        logger.info("Running EncryptedPropertyConfigurer Unit Tests...");
+        logger.info("Running EncryptedPropertyConfigurer Unit Tests...\n");
     }
 
 
@@ -59,7 +59,7 @@ public class EncryptedPropertyConfigurerTest {
      */
     @AfterClass
     public static void tearDownClass() {
-        logger.info("EncryptedPropertyConfigurer Unit Tests Completed.");
+        logger.info("EncryptedPropertyConfigurer Unit Tests Completed.\n");
     }
 
 
@@ -75,7 +75,7 @@ public class EncryptedPropertyConfigurerTest {
         logger.info("  PropertyValue: {}", propertyValue);
         String result = configurer.convertPropertyValue(propertyValue);
         assertEquals(expResult, result);
-        logger.info("Round trip conversion of encrypted property testing completed.");
+        logger.info("Round trip conversion of encrypted property testing completed.\n");
     }
 
     @Value("${unencrypted.value}") String unencryptedValue;
@@ -86,8 +86,10 @@ public class EncryptedPropertyConfigurerTest {
      */
     @Test
     public void testSpringIntegration() {
+        logger.info("Testing spring injection of encrypted and unencrypted properties...");
         assertEquals("unencryptedString", unencryptedValue);
         assertEquals("decryptedString", decryptedValue);
+        logger.info("Spring injection of encrypted and unencrypted properties testing completed.\n");
     }
 
 }

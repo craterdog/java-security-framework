@@ -49,7 +49,7 @@ public class RsaAesMessageCryptexTest {
      */
     @BeforeClass
     public static void setUpClass() {
-        logger.info("Running RsaAesMessageCrytex Unit Tests...");
+        logger.info("Running RsaAesMessageCrytex Unit Tests...\n");
     }
 
 
@@ -58,7 +58,7 @@ public class RsaAesMessageCryptexTest {
      */
     @AfterClass
     public static void tearDownClass() {
-        logger.info("RsaAesMessageCrytex Unit Tests Completed.");
+        logger.info("RsaAesMessageCrytex Unit Tests Completed.\n");
     }
 
 
@@ -88,7 +88,7 @@ public class RsaAesMessageCryptexTest {
         assertEquals("The decrypted string was different from the original string",
                 string, decryptedString);
 
-        logger.info("Round trip string encryption test completed.");
+        logger.info("Round trip string encryption test completed.\n");
     }
 
 
@@ -171,7 +171,7 @@ public class RsaAesMessageCryptexTest {
         assertEquals("The decrypted response was different from the original response",
                 response, new String(decryptedOutput.toByteArray()));
 
-        logger.info("Round trip message encryption test completed.");
+        logger.info("Round trip message encryption test completed.\n");
     }
 
 }

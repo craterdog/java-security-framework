@@ -41,7 +41,7 @@ public class ExampleCodeTest {
      */
     @BeforeClass
     public static void setUpClass() {
-        logger.info("Running Example Code Unit Tests...");
+        logger.info("Running Example Code Unit Tests...\n");
     }
 
 
@@ -50,7 +50,7 @@ public class ExampleCodeTest {
      */
     @AfterClass
     public static void tearDownClass() {
-        logger.info("Example Code Unit Tests Completed.");
+        logger.info("Example Code Unit Tests Completed.\n");
     }
 
 
@@ -111,7 +111,7 @@ public class ExampleCodeTest {
         X509Certificate certificate = manager.signCertificateRequest(caPrivateKey, caCertificate, csr, serialNumber, lifetime);
         certificate.verify(caPublicKey);
 
-        logger.info("Example code testing completed.");
+        logger.info("Example code testing completed.\n");
     }
 
 }

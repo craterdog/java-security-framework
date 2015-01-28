@@ -42,7 +42,7 @@ public class ExampleCodeTest {
      */
     @BeforeClass
     public static void setUpClass() {
-        logger.info("Running Example Code Unit Tests...");
+        logger.info("Running Example Code Unit Tests...\n");
     }
 
 
@@ -51,7 +51,7 @@ public class ExampleCodeTest {
      */
     @AfterClass
     public static void tearDownClass() {
-        logger.info("Example Code Unit Tests Completed.");
+        logger.info("Example Code Unit Tests Completed.\n");
     }
 
 
@@ -134,7 +134,7 @@ public class ExampleCodeTest {
         logger.info("    The decrypted response is: \"{}\"", new String(decryptedOutput.toByteArray()));
 
 
-        logger.info("Round trip message encryption test completed.");
+        logger.info("Round trip message encryption test completed.\n");
 
     }
 

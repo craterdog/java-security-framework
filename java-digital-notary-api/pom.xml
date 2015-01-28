@@ -14,8 +14,9 @@
 
     <parent>
         <groupId>com.craterdog.maven-parent-poms</groupId>
-        <artifactId>java-aggregator</artifactId>
+        <artifactId>java-api</artifactId>
         <version>3.9</version>
+        <relativePath />
     </parent>
 
     <organization>
@@ -23,14 +24,14 @@
         <url>http://craterdog.com</url>
     </organization>
 
-    <name>Crater Dog Java Security Framework Aggregator Project</name>
-    <description>The aggregator project for packaging the Java security framework artifacts.</description>
+    <name>Crater Dog Java Digital Notary API</name>
+    <description>This project defines the Java interfaces and classes supported by a digital notary.</description>
     <url>https://github.com/craterdog/java-security-framework/wiki</url>
 
     <groupId>com.craterdog.java-security-framework</groupId>
-    <artifactId>aggregator</artifactId>
+    <artifactId>java-digital-notary-api</artifactId>
     <version>3.5-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <licenses>
         <license>
@@ -48,17 +49,26 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>java-digital-notary-api</module>
-        <module>java-digital-notary-providers</module>
-        <module>java-secure-messaging-api</module>
-        <module>java-secure-messaging-providers</module>
-        <module>java-certificate-management-api</module>
-        <module>java-certificate-management-providers</module>
-        <module>java-certificate-generation</module>
-        <module>java-security-utilities</module>
-        <module>java-property-encryptor</module>
-    </modules>
+    <properties>
+        <java-primitive-types-version>3.4</java-primitive-types-version>
+        <java-smart-objects-version>3.3-SNAPSHOT</java-smart-objects-version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.craterdog</groupId>
+            <artifactId>java-primitive-types</artifactId>
+            <version>${java-primitive-types-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.craterdog</groupId>
+            <artifactId>java-smart-objects</artifactId>
+            <version>${java-smart-objects-version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+    </build>
 
     <scm>
         <connection>scm:git:git@github.com:craterdog/java-security-framework.git</connection>
