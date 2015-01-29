@@ -108,7 +108,7 @@ public final class RsaDigitalNotary implements Notarization {
 
 
     @Override
-    public DigitalSeal notarizeDocument(String document, NotaryKey notaryKey) {
+    public DigitalSeal notarizeDocument(String documentType, String document, NotaryKey notaryKey) {
         logger.entry(document, notaryKey);
 
         logger.debug("Verifying that the notary key has not expired...");
@@ -126,9 +126,10 @@ public final class RsaDigitalNotary implements Notarization {
 
         logger.debug("Create a digital notary seal...");
         DigitalSeal seal = new DigitalSeal();
-        seal.timestamp = DateTime.now();
         seal.notaryKeyId = notaryKey.keyId;
         seal.sha256VerificationKeyHash = keyHash;
+        seal.timestamp = DateTime.now();
+        seal.documentType = documentType;
         seal.documentSignature = signature;
 
         logger.exit(seal);
@@ -137,16 +138,16 @@ public final class RsaDigitalNotary implements Notarization {
 
 
     @Override
-    public boolean documentIsValid(String document, PublicKey verificationKey, DigitalSeal notarySeal) {
-        logger.entry(document, verificationKey, notarySeal);
+    public boolean documentIsValid(String document, DigitalSeal seal, PublicKey verificationKey) {
+        logger.entry(document, verificationKey, seal);
         boolean result = true;
         try {
             logger.debug("Validating the SHA-256 hash of the verification key...");
-            String keyHash = notarySeal.sha256VerificationKeyHash;
+            String keyHash = seal.sha256VerificationKeyHash;
             validateHash(keyHash, verificationKey);
 
             logger.debug("Validating the notary seal on the document...");
-            String signature = notarySeal.documentSignature;
+            String signature = seal.documentSignature;
             validateSignature(document, signature, verificationKey);
         } catch (Exception e) {
             logger.debug("A '{}' exception was thrown while validating the following document: {}", e.getMessage(), document);
@@ -158,22 +159,22 @@ public final class RsaDigitalNotary implements Notarization {
 
 
     @Override
-    public DigitalSeal notarizeDocument(SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey) {
+    public DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey) {
         logger.entry(document, notaryKey);
         logger.debug("Converting the document to a JSON string...");
         String documentString = document.toString();
-        DigitalSeal seal = notarizeDocument(documentString, notaryKey);
+        DigitalSeal seal = notarizeDocument(documentType, documentString, notaryKey);
         logger.exit(seal);
         return seal;
     }
 
 
     @Override
-    public boolean documentIsValid(SmartObject<? extends SmartObject<?>> document, PublicKey verificationKey, DigitalSeal notarySeal) {
-        logger.entry(document, verificationKey, notarySeal);
+    public boolean documentIsValid(SmartObject<? extends SmartObject<?>> document, DigitalSeal seal, PublicKey verificationKey) {
+        logger.entry(document, verificationKey, seal);
         logger.debug("Converting the document to a JSON string...");
         String documentString = document.toString();
-        boolean result = documentIsValid(documentString, verificationKey, notarySeal);
+        boolean result = documentIsValid(documentString, seal, verificationKey);
         logger.exit(result);
         return result;
     }

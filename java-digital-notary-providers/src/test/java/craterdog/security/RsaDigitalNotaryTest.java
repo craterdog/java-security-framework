@@ -55,22 +55,24 @@ public class RsaDigitalNotaryTest {
         NotaryKey notaryKey = notary.generateNotaryKey();
 
         logger.info("  Notarizing a string document...");
+        String documentType = "Test Document";
         String stringDocument = "This document MUST be notarized!";
-        DigitalSeal notarySeal = notary.notarizeDocument(stringDocument, notaryKey);
+        DigitalSeal seal = notary.notarizeDocument(documentType, stringDocument, notaryKey);
 
         logger.info("  Verifying the notary seal...");
-        PublicKey publicKey = notaryKey.verificationKey;
-        assertTrue("  Invalid notary seal.", notary.documentIsValid(stringDocument, publicKey, notarySeal));
+        PublicKey verificationKey = notaryKey.verificationKey;
+        assertTrue("  Invalid notary seal.", notary.documentIsValid(stringDocument, seal, verificationKey));
 
         logger.info("  Generating a new watermark...");
         Watermark watermark = notary.generateWatermark(Notarization.VALID_FOR_ONE_YEAR);
-        logger.info("  The watermark: {}" + watermark);
+        logger.info("  The watermark: {}", watermark);
 
         logger.info("  Notarizing a smart document...");
-        notarySeal = notary.notarizeDocument(watermark, notaryKey);
+        documentType = "Watermark";
+        seal = notary.notarizeDocument(documentType, watermark, notaryKey);
 
         logger.info("  Verifying the notary seal...");
-        assertTrue("  Invalid notary seal.", notary.documentIsValid(watermark, publicKey, notarySeal));
+        assertTrue("  Invalid notary seal.", notary.documentIsValid(watermark, seal, verificationKey));
 
         logger.info("Round trip digital signing and verification test completed.\n");
     }

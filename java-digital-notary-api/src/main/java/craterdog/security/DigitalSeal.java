@@ -22,11 +22,6 @@ import org.joda.time.DateTime;
 public final class DigitalSeal extends SmartObject<DigitalSeal> {
 
     /**
-     * The date and time that the document was notarized.
-     */
-    public DateTime timestamp;
-
-    /**
      * The unique identifier for the notary key that was used to generate the signature.
      */
     public Tag notaryKeyId;
@@ -36,6 +31,11 @@ public final class DigitalSeal extends SmartObject<DigitalSeal> {
      * associated with the signing key used to generate the signature.
      */
     public String sha256VerificationKeyHash;
+
+    /**
+     * The date and time that the document was notarized.
+     */
+    public DateTime timestamp;
 
     /**
      * The type of document that this seal notarizes.

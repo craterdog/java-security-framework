@@ -84,42 +84,44 @@ public interface Notarization {
      * This method generates a digital seal from the specified document using the specified
      * private notary key.
      *
+     * @param documentType The type of document being notarized.
      * @param document The document to be notarized.
      * @param notaryKey The notary key used to notarize the document.
      * @return The newly generated digital seal.
      */
-    DigitalSeal notarizeDocument(String document, NotaryKey notaryKey);
+    DigitalSeal notarizeDocument(String documentType, String document, NotaryKey notaryKey);
 
     /**
      * This method uses the specified public verification key to verify that the specified
      * digital seal is valid for the specified document.
      *
      * @param document The notarized document to be verified.
+     * @param seal The digital seal for the document.
      * @param verificationKey The verification key of the notary that signed the document.
-     * @param notarySeal The digital seal for the document.
      * @return Whether or not the digital seal is valid.
      */
-    boolean documentIsValid(String document, PublicKey verificationKey, DigitalSeal notarySeal);
+    boolean documentIsValid(String document, DigitalSeal seal, PublicKey verificationKey);
 
     /**
      * This method generates a digital seal from the specified document using the specified
      * private notary key.
      *
+     * @param documentType The type of document being notarized.
      * @param document The document to be notarized.
      * @param notaryKey The notary key used to notarize the document.
      * @return The newly generated digital seal.
      */
-    DigitalSeal notarizeDocument(SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey);
+    DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey);
 
     /**
      * This method uses the specified public verification key to verify that the specified
      * digital seal is valid for the specified document.
      *
      * @param document The notarized document to be verified.
+     * @param seal The digital seal for the document.
      * @param verificationKey The verification key of the notary that signed the document.
-     * @param notarySeal The digital seal for the document.
      * @return Whether or not the digital seal is valid.
      */
-    boolean documentIsValid(SmartObject<? extends SmartObject<?>> document, PublicKey verificationKey, DigitalSeal notarySeal);
+    boolean documentIsValid(SmartObject<? extends SmartObject<?>> document, DigitalSeal seal, PublicKey verificationKey);
 
 }
