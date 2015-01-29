@@ -64,7 +64,7 @@ public class RsaDigitalNotaryTest {
 
         logger.info("  Generating a new watermark...");
         Watermark watermark = notary.generateWatermark(Notarization.VALID_FOR_ONE_YEAR);
-        logger.info("  The watermark: " + watermark.toString("  "));
+        logger.info("  The watermark: {}" + watermark);
 
         logger.info("  Notarizing a smart document...");
         notarySeal = notary.notarizeDocument(watermark, notaryKey);
