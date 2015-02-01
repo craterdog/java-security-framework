@@ -58,6 +58,7 @@ public class RsaDigitalNotaryTest {
         String documentType = "Test Document";
         String stringDocument = "This document MUST be notarized!";
         DigitalSeal seal = notary.notarizeDocument(documentType, stringDocument, notaryKey);
+        logger.info("  The digital seal: " + seal.toString("  "));
 
         logger.info("  Verifying the notary seal...");
         PublicKey verificationKey = notaryKey.verificationKey;
@@ -65,7 +66,7 @@ public class RsaDigitalNotaryTest {
 
         logger.info("  Generating a new watermark...");
         Watermark watermark = notary.generateWatermark(Notarization.VALID_FOR_ONE_YEAR);
-        logger.info("  The watermark: {}", watermark);
+        logger.info("  The watermark: " + watermark.toString("  "));
 
         logger.info("  Notarizing a smart document...");
         documentType = "Watermark";

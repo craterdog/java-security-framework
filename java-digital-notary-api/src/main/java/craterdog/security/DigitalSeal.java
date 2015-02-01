@@ -54,4 +54,13 @@ public final class DigitalSeal extends SmartObject<DigitalSeal> {
      */
     public String documentSignature;
 
+
+    /**
+     * The default constructor ensures that the custom attribute types (like tags) will be
+     * formatted correctly when printed.
+     */
+    public DigitalSeal() {
+        this.addSerializableClass(Tag.class);
+    }
+
 }
