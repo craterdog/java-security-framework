@@ -9,9 +9,12 @@
  ************************************************************************/
 package craterdog.security;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.PublicKey;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.ext.XLogger;
@@ -58,7 +61,7 @@ public class RsaDigitalNotaryTest {
         String documentType = "Test Document";
         String stringDocument = "This document MUST be notarized!";
         DigitalSeal seal = notary.notarizeDocument(documentType, stringDocument, notaryKey);
-        logger.info("  The digital seal: " + seal.toString("  "));
+        outputExample("DigitalSeal.json", seal);
 
         logger.info("  Verifying the notary seal...");
         PublicKey verificationKey = notaryKey.verificationKey;
@@ -66,7 +69,7 @@ public class RsaDigitalNotaryTest {
 
         logger.info("  Generating a new watermark...");
         Watermark watermark = notary.generateWatermark(Notarization.VALID_FOR_ONE_YEAR);
-        logger.info("  The watermark: " + watermark.toString("  "));
+        outputExample("Watermark.json", watermark);
 
         logger.info("  Notarizing a smart document...");
         documentType = "Watermark";
@@ -76,6 +79,16 @@ public class RsaDigitalNotaryTest {
         assertTrue("  Invalid notary seal.", notary.documentIsValid(watermark, seal, verificationKey));
 
         logger.info("Round trip digital signing and verification test completed.\n");
+    }
+
+
+    void outputExample(String filename, Object object) {
+        String fullFilename = "../docs/examples/" + filename;
+        try (PrintWriter writer = new PrintWriter(fullFilename)) {
+            writer.print(object);
+        } catch (IOException e) {
+            fail("Unable to open the following file: " + filename);
+        }
     }
 
 }
