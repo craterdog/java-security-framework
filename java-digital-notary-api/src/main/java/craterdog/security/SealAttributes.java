@@ -11,38 +11,55 @@ package craterdog.security;
 
 import craterdog.primitives.Tag;
 import craterdog.smart.SmartObject;
+import org.joda.time.DateTime;
 
 /**
- * This class defines the attributes that make up an digital seal that is used to sign
+ * This class defines the attributes that make up a digital seal that is used to sign
  * a document.
  *
  * @author Derk Norton
  */
-public final class DigitalSeal extends SmartObject<DigitalSeal> {
+public final class SealAttributes extends SmartObject<SealAttributes> {
 
     /**
-     * The actual attributes that make up the digital seal.
+     * The unique identifier for the notary key that was used to generate the signature.
      */
-    public SealAttributes attributes;
+    public Tag notaryKeyId;
 
     /**
-     * A base 32 encoding of the bytes that were generated as a signature of the seal attributes.
-     * The signature must be generated using the following steps:
+     * A base 32 encoding of the SHA256 hash of the byte encoding for the public verification key
+     * associated with the signing key used to generate the signature.
+     */
+    public String sha256VerificationKeyHash;
+
+    /**
+     * The date and time that the document was notarized.
+     */
+    public DateTime timestamp;
+
+    /**
+     * The type of document that this seal notarizes.
+     */
+    public String documentType;
+
+    /**
+     * A base 32 encoding of the bytes that were generated as a signature of the document. The
+     * signature must be generated using the following steps:
      * <ol>
-     * <li>Format the attributes as a string.</li>
+     * <li>Format the document as a string.</li>
      * <li>Extract the characters of the string into a "UTF-8" based byte array.</li>
-     * <li>Generate the signature bytes for that array using the algorithm specified in the <code>Watermark</code> of the signed document.</li>
+     * <li>Generate the signature bytes for that array using the algorithm specified in the <code>Watermark</code>.</li>
      * <li>Encode the signature bytes as a base 32 string using the craterdog.utils.Base32Utils class.</li>
      * </ol>
      */
-    public String notarySignature;
+    public String documentSignature;
 
 
     /**
      * The default constructor ensures that the custom attribute types (like tags) will be
      * formatted correctly when printed.
      */
-    public DigitalSeal() {
+    public SealAttributes() {
         this.addSerializableClass(Tag.class);
     }
 

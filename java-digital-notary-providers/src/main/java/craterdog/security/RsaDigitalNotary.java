@@ -125,12 +125,16 @@ public final class RsaDigitalNotary implements Notarization {
         String keyHash = generateHash(verificationKey);
 
         logger.debug("Create a digital notary seal...");
+        SealAttributes attributes = new SealAttributes();
+        attributes.notaryKeyId = notaryKey.keyId;
+        attributes.sha256VerificationKeyHash = keyHash;
+        attributes.timestamp = DateTime.now();
+        attributes.documentType = documentType;
+        attributes.documentSignature = signature;
         DigitalSeal seal = new DigitalSeal();
-        seal.notaryKeyId = notaryKey.keyId;
-        seal.sha256VerificationKeyHash = keyHash;
-        seal.timestamp = DateTime.now();
-        seal.documentType = documentType;
-        seal.documentSignature = signature;
+        seal.attributes = attributes;
+        validateAttributes(seal);
+        seal.notarySignature = generateSignature(attributes.toString(), signingKey);
 
         logger.exit(seal);
         return seal;
@@ -142,13 +146,19 @@ public final class RsaDigitalNotary implements Notarization {
         logger.entry(document, verificationKey, seal);
         boolean result = true;
         try {
+            logger.debug("Validating the digital seal's attributes...");
+            validateAttributes(seal);
+
             logger.debug("Validating the SHA-256 hash of the verification key...");
-            String keyHash = seal.sha256VerificationKeyHash;
+            String keyHash = seal.attributes.sha256VerificationKeyHash;
             validateHash(keyHash, verificationKey);
 
-            logger.debug("Validating the notary seal on the document...");
-            String signature = seal.documentSignature;
+            logger.debug("Validating the notary signature of the document...");
+            String signature = seal.attributes.documentSignature;
             validateSignature(document, signature, verificationKey);
+
+            logger.debug("Validating the notary signature of the digital seal...");
+            validateSignature(seal.attributes.toString(), seal.notarySignature, verificationKey);
         } catch (Exception e) {
             logger.debug("A '{}' exception was thrown while validating the following document: {}", e.getMessage(), document);
             result = false;
@@ -204,6 +214,16 @@ public final class RsaDigitalNotary implements Notarization {
         String correctHash = generateHash(verificationKey);
         if (!hash.equals(correctHash)) {
             throw new RuntimeException("The following public key hash is invalid: " + hash);
+        }
+    }
+
+
+    private void validateAttributes(DigitalSeal seal) {
+        SealAttributes attributes = seal.attributes;
+        if (attributes.notaryKeyId == null || attributes.sha256VerificationKeyHash == null ||
+                attributes.timestamp == null || attributes.documentType == null ||
+                attributes.documentType.isEmpty() || attributes.documentSignature == null) {
+            throw new RuntimeException("The following seal has invalid attributes: " + seal);
         }
     }
 
