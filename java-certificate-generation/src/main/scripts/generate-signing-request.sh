@@ -9,14 +9,11 @@
 # Source Initiative. (See http://opensource.org/licenses/MIT)          #
 ########################################################################
 
-# This script signs a new client certificate based on a certificate signing request (CSR).  The
-# script expects the following command line arguments:
+# This script generates a new RSA 2048 bit private key and an associated
+# certificate signing request containing the public key.  This script
+# expects the following command line arguments:
 #  * The name of the target environment (e.g. Sandbox, PreProd, Production, etc.).
 #  * The name of the client.
-#  * The path to the directory that contains the private certificate authorities and passwords.
-#
-# The following file will be created in the current directory:
-#  * <client name>-<environment name>.pem - the public certificate chain containing the new client certificate and signer public certificate
 #
 
 # capture the directory and program name
@@ -31,9 +28,7 @@ function die {
 }
 
 # make sure that the right number of command line arguments were passed in
-test $# -eq 3 || die "Usage: ${PROGRAM} <environment name> <client name> <ca directory path>${NEWLINE}Example: ${PROGRAM} Sandbox CoffeeBucks /some/secret/path/"
+test $# -eq 2 || die "Usage: ${PROGRAM} <environment name> <client name> ${NEWLINE}Example: ${PROGRAM} Sandbox CoffeeBucks"
 
-# create and sign a new client certificate based on the certificate signing request
-java -classpath "${DIRECTORY}/../lib/*" craterdog.security.ClientCertificateSigner "$@"
-
-
+# do the work
+openssl req -out $2-$1.csr -new -newkey rsa:2048 -nodes -keyout $2-$1.key

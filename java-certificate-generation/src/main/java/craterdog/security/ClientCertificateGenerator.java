@@ -10,6 +10,7 @@
 package craterdog.security;
 
 import craterdog.primitives.Tag;
+import craterdog.utils.RandomUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -48,11 +49,12 @@ public class ClientCertificateGenerator {
 
     /**
      * The main method for this application.  It expects the following arguments:
-     * 1) The name of the target environment (e.g. Sandbox, PreProd, Production, etc.).
-     * 2) The name of the client.
-     * 3) The path to the directory that contains the private certificate authorities and passwords.
-     * 4) An optional tenantId for the new certificate.
-     * 5) An optional roleId for the new certificate (requires a tenantId).
+     * <ol>
+     * <li>The name of the target environment (e.g. Sandbox, PreProd, Production, etc.).</li>
+     * <li>The name of the client.</li>
+     * <li>The path to the directory that contains the private certificate authorities and passwords.</li>
+     * <li>The subject string containing the CN, O, OU, C, etc. values.</li>
+     * </ol>
      *
      * @param args The arguments that were passed into this program.
      */
@@ -60,9 +62,7 @@ public class ClientCertificateGenerator {
         String environment = args[0];
         String clientKeyStorePrefix = args[1] + "-" + environment;
         String caKeyStorePrefix = args[2] + File.separator + environment + "-CA";
-        String tenantId = args.length > 3 ? args[3] : new Tag().toString();
-        String roleId = args.length > 4 ? args[4] : null;
-        String certificateId = new Tag().toString();
+        String subject = args[3];
 
         try (
                 FileReader pwReader = new FileReader(caKeyStorePrefix + ".pw");
@@ -71,7 +71,7 @@ public class ClientCertificateGenerator {
                 FileOutputStream clientOutput = new FileOutputStream(clientKeyStorePrefix + ".p12")
                 ) {
             logger.info("Loading the private certificate authority keys...");
-            int size = new Tag().toBytes().length;
+            int size = new Tag(16).toString().length();
             char[] caPassword = new char[size];
             pwReader.read(caPassword);
             RsaCertificateManager manager = new RsaCertificateManager();
@@ -85,16 +85,15 @@ public class ClientCertificateGenerator {
             PrivateKey clientPrivateKey = clientKeyPair.getPrivate();
 
             logger.info("Generating and signing a new client certificate...");
-            String subject = buildSubject(tenantId, certificateId, roleId);
             long lifetime = 30L /*years*/ * 365L /*days*/ * 24L /*hours*/ * 60L /*minutes*/
                     * 60L /*seconds*/ * 1000L /*milliseconds*/;
-            BigInteger serialNumber = new BigInteger(new Tag(certificateId).toBytes());
+            BigInteger serialNumber = new BigInteger(RandomUtils.generateRandomBytes(16));
             X509Certificate clientCertificate = manager.createCertificate(caPrivateKey,
                     caCertificate, clientPublicKey, subject, serialNumber, lifetime);
             clientCertificate.verify(caCertificate.getPublicKey());
 
             logger.info("Storing the new client certificate and private key in a key store...");
-            char[] clientPassword = new Tag().toString().toCharArray();
+            char[] clientPassword = new Tag(16).toString().toCharArray();
             List<X509Certificate> certificates = new ArrayList<>();
             certificates.add(clientCertificate);
             certificates.add(caCertificate);

@@ -10,6 +10,7 @@
 package craterdog.security;
 
 import craterdog.primitives.Tag;
+import craterdog.utils.RandomUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -24,8 +25,6 @@ import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
-import static org.bouncycastle.asn1.x500.style.BCStyle.CN;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.openssl.PEMWriter;
@@ -47,9 +46,11 @@ public class ClientCertificateSigner {
 
     /**
      * The main method for this application.  It expects the following arguments:
-     * 1) The name of the target environment (e.g. Sandbox, PreProd, Production, etc.).
-     * 2) The name of the client.
-     * 3) The path to the directory that contains the private certificate authorities and passwords.
+     * <ol>
+     * <li>The name of the target environment (e.g. Sandbox, PreProd, Production, etc.).</li>
+     * <li>The name of the client.</li>
+     * <li>The path to the directory that contains the private certificate authorities and passwords.</li>
+     * </ol>
      *
      * @param args The arguments that were passed into this program.
      */
@@ -65,7 +66,7 @@ public class ClientCertificateSigner {
                 PEMWriter pemWriter = new PEMWriter(new FileWriter(clientCertificatePrefix + ".pem"))
                 ) {
             logger.info("Loading the private certificate authority keys...");
-            int size = new Tag().toBytes().length;
+            int size = new Tag(16).toString().length();
             char[] caPassword = new char[size];
             pwReader.read(caPassword);
             RsaCertificateManager manager = new RsaCertificateManager();
@@ -75,13 +76,11 @@ public class ClientCertificateSigner {
 
             logger.info("Reading in the certificate signing request...");
             PKCS10CertificationRequest csr = (PKCS10CertificationRequest) csrReader.readObject();
-            CertificationRequestInfo info = csr.getCertificationRequestInfo();
-            String certificateId = (String) info.getSubject().getValues(CN).firstElement();
 
             logger.info("Generating and signing a new client certificate...");
             long lifetime = 30L /*years*/ * 365L /*days*/ * 24L /*hours*/ * 60L /*minutes*/
                     * 60L /*seconds*/ * 1000L /*milliseconds*/;
-            BigInteger serialNumber = new BigInteger(new Tag(certificateId).toBytes());
+            BigInteger serialNumber = new BigInteger(RandomUtils.generateRandomBytes(16));
             X509Certificate clientCertificate = manager.signCertificateRequest(caPrivateKey, caCertificate, csr, serialNumber, lifetime);
             clientCertificate.verify(caCertificate.getPublicKey());
 

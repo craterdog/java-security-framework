@@ -11,11 +11,10 @@
 
 # This script generates a new client certificate and private key in PKCS12 format.  The
 # script expects the following command line arguments:
-#  * the name of the environment (e.g. Sandbox, PreProd, Production, etc.)
-#  * the name of the client
-#  * the path to the certificate authority files and their associated passwords
-#  * the tenantId for the certificate (optional)
-#  * the roleId for the certificate (optional, but can only be specified if a tenantId is also specified)
+#  * The name of the target environment (e.g. Sandbox, PreProd, Production, etc.).
+#  * The name of the client.
+#  * The path to the directory that contains the private certificate authorities and passwords.
+#  * The subject string containing the CN, O, OU, C, etc. values.
 #
 # The following two files will be created in the current directory:
 #  * <client name>-<environment name>.p12 - the PKCS12 encrypted client private key and certificate keystore
@@ -34,15 +33,7 @@ function die {
 }
 
 # make sure that the right number of command line arguments were passed in
-test $# -gt 2 && test $# -lt 6 || die "Usage: ${PROGRAM} <environment name> <client name> <ca directory path> [<tenantId> [<roleId>]]${NEWLINE}Example: ${PROGRAM} Sandbox CoffeeBucks /some/secret/path/ AG72AL0DB6123DC3S7LJZ2T7MW"
+test $# -eq 4 || die "Usage: ${PROGRAM} <environment name> <client name> <ca directory path> <subject> ${NEWLINE}Example: ${PROGRAM} Sandbox CoffeeBucks /some/secret/path/ 'CN=http://acmecoffee.com,O=Acme Coffee,C=US'"
 
-# execute the java program to do the work
-if [ $# -gt 4 ]; then
-    java -classpath "${DIRECTORY}/../lib/*" craterdog.security.ClientCertificateGenerator $1 $2 $3 $4 $5
-elif [ $# -gt 3 ]; then
-    java -classpath "${DIRECTORY}/../lib/*" craterdog.security.ClientCertificateGenerator $1 $2 $3 $4
-else
-    java -classpath "${DIRECTORY}/../lib/*" craterdog.security.ClientCertificateGenerator $1 $2 $3
-fi
-
-
+# generate a new client certificate keystore for the environment
+java -classpath "${DIRECTORY}/../lib/*" craterdog.security.ClientCertificateGenerator "$@"
