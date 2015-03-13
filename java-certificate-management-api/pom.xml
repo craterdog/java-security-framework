@@ -50,9 +50,15 @@
     </developers>
 
     <properties>
+        <java-general-utilities-version>3.6</java-general-utilities-version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.craterdog</groupId>
+            <artifactId>java-general-utilities</artifactId>
+            <version>${java-general-utilities-version}</version>
+        </dependency>
     </dependencies>
 
     <build>

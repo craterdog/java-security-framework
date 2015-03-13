@@ -9,14 +9,17 @@
  ************************************************************************/
 package craterdog.security;
 
+import craterdog.utils.Base64Utils;
+import craterdog.utils.RandomUtils;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -87,8 +90,7 @@ public abstract class CertificateManager {
             keyStore.store(output, password);
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to save a keystore.", e);
-            logger.throwing(exception);
-            throw exception;
+            throw logger.throwing(exception);
         }
         logger.exit();
     }
@@ -111,8 +113,7 @@ public abstract class CertificateManager {
             return keyStore;
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to retrieve a keystore.", e);
-            logger.throwing(exception);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -132,8 +133,7 @@ public abstract class CertificateManager {
             return certificate;
         } catch (KeyStoreException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to retrieve a certificate.", e);
-            logger.throwing(exception);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -154,9 +154,45 @@ public abstract class CertificateManager {
             return privateKey;
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to retrieve a private key.", e);
-            logger.throwing(exception);
-            throw exception;
+            throw logger.throwing(exception);
         }
+    }
+
+
+    public final String[] splitPrivateKey(PrivateKey key) {
+        String[] result = new String[2];
+        byte[] keyBytes = key.getEncoded();
+        int numberOfBytes = keyBytes.length;
+        byte[] randomBytes = RandomUtils.generateRandomBytes(numberOfBytes);
+        byte[] xorBytes = xorByteArrays(keyBytes, randomBytes);
+        result[0] = Base64Utils.encode(randomBytes);
+        result[1] = Base64Utils.encode(xorBytes);
+        return result;
+    }
+
+
+    public final PrivateKey mergePrivateKey(String[] encodedByteArrays) {
+        try {
+            byte[] randomBytes = Base64Utils.decode(encodedByteArrays[0]);
+            byte[] xorBytes = Base64Utils.decode(encodedByteArrays[1]);
+            byte[] keyBytes = xorByteArrays(randomBytes, xorBytes);
+            KeyFactory factory = KeyFactory.getInstance(getAsymmetricKeyType());
+            PrivateKey privateKey = factory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+            return privateKey;
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            RuntimeException exception = new RuntimeException("Attempted to merge invalid key shards");
+            throw logger.throwing(exception);
+        }
+    }
+
+
+    private byte[] xorByteArrays(byte[] firstArray, byte[] secondArray) {
+        int numberOfBytes = firstArray.length;
+        byte[] xorBytes = new byte[numberOfBytes];
+        for (int i = 0; i < numberOfBytes; i++) {
+            xorBytes[i] =  (byte) (0xFF & (firstArray[i] ^ secondArray[i]));
+        }
+        return xorBytes;
     }
 
 
@@ -229,8 +265,7 @@ public abstract class CertificateManager {
             return keyStore;
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to create a new keystore.", e);
-            logger.throwing(exception);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -284,13 +319,12 @@ public abstract class CertificateManager {
             keyStore.store(out, password);
             out.flush();
             byte[] bytes = out.toByteArray();
-            String encodedKeyStore = Base64.encodeBase64String(bytes);
+            String encodedKeyStore = Base64Utils.encode(bytes);
             logger.exit();
             return encodedKeyStore;
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to encode a keystore.", e);
-            logger.throwing(exception);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -304,7 +338,7 @@ public abstract class CertificateManager {
      */
     public final KeyStore decodeKeyStore(String base64String, char[] password) {
         logger.entry();
-        byte[] bytes = Base64.decodeBase64(base64String);
+        byte[] bytes = Base64Utils.decode(base64String);
         try (ByteArrayInputStream in = new ByteArrayInputStream(bytes)) {
             KeyStore keyStore = KeyStore.getInstance(KEY_STORE_FORMAT);
             keyStore.load(in, password);
@@ -312,8 +346,7 @@ public abstract class CertificateManager {
             return keyStore;
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a keystore.", e);
-            logger.throwing(exception);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 

@@ -11,37 +11,31 @@ package craterdog.security;
 
 import craterdog.primitives.Tag;
 import craterdog.smart.SmartObject;
+import java.util.List;
 
 /**
- * This class defines a digital seal that is used to sign a document.
+ * This class defines a digitally notarized document.
  *
  * @author Derk Norton
  */
-public final class DigitalSeal extends SmartObject<DigitalSeal> {
+public class NotarizedDocument extends SmartObject<NotarizedDocument> {
+
+    /*
+     * This actual attributes that make up the notarized document.
+     */
+    public DocumentAttributes attributes;
 
     /**
-     * The actual attributes that make up the digital seal.
+     * The digital seals notarizing the document.
      */
-    public SealAttributes attributes;
-
-    /**
-     * A base 32 encoding of the bytes that were generated as a signature of the seal attributes.
-     * The signature must be generated using the following steps:
-     * <ol>
-     * <li>Format the attributes as a string.</li>
-     * <li>Extract the characters of the string into a "UTF-8" based byte array.</li>
-     * <li>Generate the signature bytes for that array using the algorithm specified in the <code>Watermark</code> of the signed document.</li>
-     * <li>Encode the signature bytes as a base 32 string using the craterdog.utils.Base32Utils class.</li>
-     * </ol>
-     */
-    public String notarySignature;
+    public List<DigitalSeal> seals;
 
 
     /**
      * The default constructor ensures that the custom attribute types (like tags) will be
      * formatted correctly when printed.
      */
-    public DigitalSeal() {
+    public NotarizedDocument() {
         this.addSerializableClass(Tag.class);
     }
 

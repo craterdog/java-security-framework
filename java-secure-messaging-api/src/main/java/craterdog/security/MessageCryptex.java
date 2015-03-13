@@ -9,6 +9,7 @@
  ************************************************************************/
 package craterdog.security;
 
+import craterdog.utils.Base64Utils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,7 +17,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import javax.crypto.*;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -35,7 +35,7 @@ public abstract class MessageCryptex implements MessageEncryption, MessageDecryp
     @Override
     public final String encodeBytes(byte[] bytes) {
         logger.entry();
-        String base64String = Base64.encodeBase64String(bytes);
+        String base64String = Base64Utils.encode(bytes);
         logger.exit();
         return base64String;
     }
@@ -44,7 +44,7 @@ public abstract class MessageCryptex implements MessageEncryption, MessageDecryp
     @Override
     public final byte[] decodeString(String base64String) {
         logger.entry();
-        byte[] decodedBytes = Base64.decodeBase64(base64String);
+        byte[] decodedBytes = Base64Utils.decode(base64String);
         logger.exit();
         return decodedBytes;
     }

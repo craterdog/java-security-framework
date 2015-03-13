@@ -9,9 +9,9 @@
  ************************************************************************/
 package craterdog.security;
 
+import craterdog.utils.Base64Utils;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -29,7 +29,7 @@ public class EncryptedPropertyConfigurer extends PropertySourcesPlaceholderConfi
     static private final MessageCryptex cryptex = new RsaAesMessageCryptex();  // must be this implementation!
     static private final String ENCRYPTED_NOTATION = "{AES-128}";
     static private final String ENCODED_KEY = "XbZHQYKRQcBoBXqU0G43Rw==";  // base 64 encoded AES-128 key
-    static private final SecretKey key = new SecretKeySpec(Base64.decodeBase64(ENCODED_KEY),
+    static private final SecretKey key = new SecretKeySpec(Base64Utils.decode(ENCODED_KEY),
             cryptex.getSymmetricEncryptionAlgorithm());
 
 
@@ -42,7 +42,7 @@ public class EncryptedPropertyConfigurer extends PropertySourcesPlaceholderConfi
      */
     public String encryptPropertyValue(String propertyValue) {
         byte[] bytes = cryptex.encryptString(key, propertyValue);
-        String encryptedValue = Base64.encodeBase64String(bytes);
+        String encryptedValue = Base64Utils.encode(bytes);
         return ENCRYPTED_NOTATION + encryptedValue;
     }
 
@@ -71,7 +71,7 @@ public class EncryptedPropertyConfigurer extends PropertySourcesPlaceholderConfi
     protected String convertPropertyValue(String propertyValue) {
         if (StringUtils.isNotBlank(propertyValue) && propertyValue.startsWith(ENCRYPTED_NOTATION)) {
             propertyValue = propertyValue.substring(ENCRYPTED_NOTATION.length());
-            byte[] bytes = Base64.decodeBase64(propertyValue);
+            byte[] bytes = Base64Utils.decode(propertyValue);
             propertyValue = cryptex.decryptString(key, bytes);
         }
         return propertyValue;

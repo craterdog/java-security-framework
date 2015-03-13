@@ -74,6 +74,10 @@ public class RsaCertificateManagerTest {
         PublicKey caPublicKey = caKeyPair.getPublic();
         PrivateKey caPrivateKey = caKeyPair.getPrivate();
 
+        logger.info("  Splitting and merging the private key.");
+        String[] horcruxes = manager.splitPrivateKey(caPrivateKey);
+        caPrivateKey = manager.mergePrivateKey(horcruxes);
+
         logger.info("  Encoding and decoding the public key.");
         String pem = manager.encodePublicKey(caPublicKey);
         PublicKey key = manager.decodePublicKey(pem);
