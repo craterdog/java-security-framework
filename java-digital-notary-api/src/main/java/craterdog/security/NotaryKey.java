@@ -10,6 +10,8 @@
 package craterdog.security;
 
 import craterdog.primitives.Tag;
+import craterdog.security.mappers.NotaryKeyModule;
+import craterdog.smart.SmartObject;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
@@ -21,7 +23,7 @@ import java.security.PublicKey;
  *
  * @author Derk Norton
  */
-public final class NotaryKey {
+public final class NotaryKey extends SmartObject<NotaryKey> {
 
     /**
      * The unique identifier for the notary key.
@@ -42,5 +44,11 @@ public final class NotaryKey {
      * The lifetime of the key along with the version of the signing algorithm used to generate it.
      */
     public Watermark watermark;
+
+
+    public NotaryKey() {
+        this.addSerializableClass(Tag.class);
+        this.addSerializableClass(new NotaryKeyModule());
+    }
 
 }

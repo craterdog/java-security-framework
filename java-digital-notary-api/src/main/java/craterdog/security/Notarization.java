@@ -10,6 +10,7 @@
 package craterdog.security;
 
 import craterdog.smart.SmartObject;
+import java.io.IOException;
 import java.security.PublicKey;
 
 /**
@@ -61,6 +62,27 @@ public interface Notarization {
      * @return The newly generated notary key.
      */
     NotaryKey generateNotaryKey();
+
+    /**
+     * This method serializes, as a JSON string, the specified notary key encrypting the
+     * private signing key using the specified password.
+     *
+     * @param notaryKey The notary key to be serialized.
+     * @param password The password to be used to encrypt the signing key.
+     * @return A JSON string representing the notary key.
+     */
+    String serializeNotaryKey(NotaryKey notaryKey, char[] password);
+
+    /**
+     * This method de-serializes, from a JSON string, a notary key using the specified
+     * password to decrypt the signing key.
+     *
+     * @param json The JSON string representing the notary key.
+     * @param password The password to be used to decrypt the signing key.
+     * @return The reconstituted notary key.
+     * @throws java.io.IOException
+     */
+    NotaryKey deserializeNotaryKey(String json, char[] password) throws IOException;
 
     /**
      * This method generates a watermark defining the lifetime of a new document as well as

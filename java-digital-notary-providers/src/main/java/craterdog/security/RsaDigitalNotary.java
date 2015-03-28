@@ -11,8 +11,12 @@ package craterdog.security;
 
 import static craterdog.security.Notarization.VALID_FOR_ONE_YEAR;
 import craterdog.primitives.Tag;
+import craterdog.security.mappers.NotaryKeyModule;
 import craterdog.smart.SmartObject;
+import craterdog.smart.SmartObjectMapper;
+import craterdog.smart.UseToStringAsValueMixIn;
 import craterdog.utils.Base32Utils;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
 import java.security.MessageDigest;
@@ -73,6 +77,33 @@ public final class RsaDigitalNotary implements Notarization {
         logger.debug("Adding a watermark...");
         notaryKey.watermark = generateWatermark(VALID_FOR_ONE_YEAR);
 
+        logger.exit(notaryKey);
+        return notaryKey;
+    }
+
+
+    @Override
+    public String serializeNotaryKey(NotaryKey notaryKey, char[] password) {
+        logger.entry(notaryKey);
+        String json;
+        try {
+            SmartObjectMapper mapper = new SmartObjectMapper(new NotaryKeyModule(password));
+            mapper.addMixIn(Tag.class, UseToStringAsValueMixIn.class);
+            json = mapper.writeValueAsString(notaryKey);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to serialize a notary key.", e);
+        }
+        logger.exit(json);
+        return json;
+    }
+
+
+    @Override
+    public NotaryKey deserializeNotaryKey(String json, char[] password) throws IOException {
+        logger.entry(json);
+        SmartObjectMapper mapper = new SmartObjectMapper(new NotaryKeyModule(password));
+        mapper.addMixIn(Tag.class, UseToStringAsValueMixIn.class);
+        NotaryKey notaryKey = mapper.readValue(json, NotaryKey.class);
         logger.exit(notaryKey);
         return notaryKey;
     }

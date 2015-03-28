@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.PublicKey;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
@@ -56,6 +57,14 @@ public class RsaDigitalNotaryTest {
         logger.info("  Generating a new notary key...");
         Notarization notary = new RsaDigitalNotary();
         NotaryKey notaryKey = notary.generateNotaryKey();
+        outputExample("NotaryKey.json", notaryKey);
+
+        logger.info("  Serializing and deserializing the notary key...");
+        char[] password = notaryKey.keyId.toString().toCharArray();
+        String json = notary.serializeNotaryKey(notaryKey, password);
+        NotaryKey copy = notary.deserializeNotaryKey(json, password);
+        assertEquals("  Serialization round trip failed.", notaryKey, copy);
+        outputExample("FullNotaryKey.json", json);
 
         logger.info("  Notarizing a string document...");
         String documentType = "Test Document";

@@ -80,9 +80,16 @@ public class RsaCertificateManagerTest {
 
         logger.info("  Encoding and decoding the public key.");
         String pem = manager.encodePublicKey(caPublicKey);
-        PublicKey key = manager.decodePublicKey(pem);
-        String pem2 = manager.encodePublicKey(key);
+        PublicKey publicKey = manager.decodePublicKey(pem);
+        String pem2 = manager.encodePublicKey(publicKey);
         assertEquals("Encoded Public Key", pem, pem2);
+
+        logger.info("  Encoding and decoding the private key with password.");
+        char[] caPassword = new Tag().toString().toCharArray();
+        pem = manager.encodePrivateKey(caPrivateKey, caPassword);
+        PrivateKey privateKey = manager.decodePrivateKey(pem, caPassword);
+        pem2 = manager.encodePrivateKey(privateKey, caPassword);
+        assertEquals("Encoded Private Key", pem, pem2);
 
         logger.info("  Generating a self-signed CA certificate.");
         String caSubject = "CN=Crater Dog Technologies Private Certificate Authority, O=Crater Dog Technologies, C=US";
@@ -93,7 +100,6 @@ public class RsaCertificateManagerTest {
 
         logger.info("  Creating the CA key store.");
         String caKeyName = "Signer";
-        char[] caPassword = new Tag().toString().toCharArray();
         KeyStore caKeyStore = manager.createPkcs12KeyStore(caKeyName, caPassword, caPrivateKey, caCertificate);
 
         logger.info("  Writing out the key store and password to a files and reading them back in.");
@@ -145,8 +151,8 @@ public class RsaCertificateManagerTest {
 
         logger.info("  Creating a new certificate signing request...");
         KeyPair keyPair = manager.generateKeyPair();
-        PrivateKey privateKey = keyPair.getPrivate();
-        PublicKey publicKey = keyPair.getPublic();
+        privateKey = keyPair.getPrivate();
+        publicKey = keyPair.getPublic();
         String subject = "CN=craterdog.com, O=Crater Dog Technologies™, OU=Engineering, ST=Colorado, C=USA";
         PKCS10CertificationRequest csr = manager.createSigningRequest(privateKey, publicKey, subject);
 

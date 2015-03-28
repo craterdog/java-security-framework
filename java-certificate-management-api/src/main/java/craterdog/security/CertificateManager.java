@@ -271,7 +271,7 @@ public abstract class CertificateManager {
 
 
     /**
-     * This method encodes a public or private key into a PEM string.
+     * This method encodes a public key into a PEM string.
      *
      * @param key The public key.
      * @return The corresponding PEM string.
@@ -286,6 +286,26 @@ public abstract class CertificateManager {
      * @return The corresponding key.
      */
     public abstract PublicKey decodePublicKey(String pem);
+
+
+    /**
+     * This method encodes a private key into a PEM string.
+     *
+     * @param key The private key.
+     * @param password The password to be used to encrypt the private key.
+     * @return The corresponding PEM string.
+     */
+    public abstract String encodePrivateKey(PrivateKey key, char[] password);
+
+
+    /**
+     * This method decodes private key from a PEM string.
+     *
+     * @param pem The PEM string for the private key.
+     * @param password The password to be used to decrypt the private key.
+     * @return The corresponding key.
+     */
+    public abstract PrivateKey decodePrivateKey(String pem, char[] password);
 
 
     /**
