@@ -16,7 +16,7 @@ The following highlights the main capabilities that this multi-module maven proj
 
  * symmetric (shared) key generation and formatting
  * asymmetric (public/private) key generation and formatting
- * signing and validation of documents
+ * signing (notarization) and validation of documents
  * encryption and decryption of keys and data
  * private certificate authority (CA) creation
  * client certificate generation and signing
