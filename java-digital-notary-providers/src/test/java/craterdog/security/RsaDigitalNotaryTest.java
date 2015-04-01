@@ -92,7 +92,7 @@ public class RsaDigitalNotaryTest {
 
 
     void outputExample(String filename, Object object) {
-        String fullFilename = "../docs/examples/" + filename;
+        String fullFilename = "target/" + filename;
         try (PrintWriter writer = new PrintWriter(fullFilename)) {
             writer.print(object);
         } catch (IOException e) {
