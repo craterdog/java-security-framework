@@ -90,6 +90,17 @@ public class RsaDigitalNotaryTest {
         logger.info("Round trip digital signing and verification test completed.\n");
     }
 
+    @Test
+    public void testPasswords() throws IOException {
+        Notarization notary = new RsaDigitalNotary();
+        NotaryKey notaryKey = notary.generateNotaryKey();
+        char[] password = notaryKey.keyId.toString().toCharArray();
+        String json = notary.serializeNotaryKey(notaryKey, password);
+        // this should fail ... not sure how
+        NotaryKey copy = notary.deserializeNotaryKey(json, "not the right password".toCharArray());
+        assertTrue("  Password functionality check failed. notaryKey should not equal copy", ! notaryKey.equals(copy));
+    }
+
 
     void outputExample(String filename, Object object) {
         String fullFilename = "target/" + filename;
