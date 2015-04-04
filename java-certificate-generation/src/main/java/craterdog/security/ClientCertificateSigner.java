@@ -25,9 +25,10 @@ import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.bouncycastle.openssl.PEMReader;
-import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.util.io.pem.PemWriter;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -62,8 +63,8 @@ public class ClientCertificateSigner {
         try (
                 FileReader pwReader = new FileReader(caKeyStorePrefix + ".pw");
                 FileInputStream caInput = new FileInputStream(caKeyStorePrefix + ".p12");
-                PEMReader csrReader = new PEMReader(new FileReader(clientCertificatePrefix + ".csr"));
-                PEMWriter pemWriter = new PEMWriter(new FileWriter(clientCertificatePrefix + ".pem"))
+                PemReader csrReader = new PemReader(new FileReader(clientCertificatePrefix + ".csr"));
+                PemWriter pemWriter = new PemWriter(new FileWriter(clientCertificatePrefix + ".pem"))
                 ) {
             logger.info("Loading the private certificate authority keys...");
             int size = new Tag(16).toString().length();
@@ -75,7 +76,8 @@ public class ClientCertificateSigner {
             X509Certificate caCertificate = manager.retrieveCertificate(caKeyStore, CA_ALIAS);
 
             logger.info("Reading in the certificate signing request...");
-            PKCS10CertificationRequest csr = (PKCS10CertificationRequest) csrReader.readObject();
+            byte[] requestBytes = csrReader.readPemObject().getContent();
+            PKCS10CertificationRequest csr = new PKCS10CertificationRequest(requestBytes);
 
             logger.info("Generating and signing a new client certificate...");
             long lifetime = 30L /*years*/ * 365L /*days*/ * 24L /*hours*/ * 60L /*minutes*/
@@ -85,8 +87,8 @@ public class ClientCertificateSigner {
             clientCertificate.verify(caCertificate.getPublicKey());
 
             logger.info("Writing out the certificates to a file...");
-            pemWriter.writeObject(clientCertificate);
-            pemWriter.writeObject(caCertificate);
+            pemWriter.writeObject(new PemObject("CERTIFICATE", clientCertificate.getEncoded()));
+            pemWriter.writeObject(new PemObject("CERTIFICATE", caCertificate.getEncoded()));
 
         } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException |
                 NoSuchProviderException | SignatureException | IOException e) {

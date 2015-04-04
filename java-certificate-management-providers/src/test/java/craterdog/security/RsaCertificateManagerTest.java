@@ -22,7 +22,7 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
@@ -82,14 +82,15 @@ public class RsaCertificateManagerTest {
         String pem = manager.encodePublicKey(caPublicKey);
         PublicKey publicKey = manager.decodePublicKey(pem);
         String pem2 = manager.encodePublicKey(publicKey);
-        assertEquals("Encoded Public Key", pem, pem2);
+        assertEquals("  The encoded and decoded public keys don't match.", pem, pem2);
 
         logger.info("  Encoding and decoding the private key with password.");
         char[] caPassword = new Tag().toString().toCharArray();
         pem = manager.encodePrivateKey(caPrivateKey, caPassword);
         PrivateKey privateKey = manager.decodePrivateKey(pem, caPassword);
         pem2 = manager.encodePrivateKey(privateKey, caPassword);
-        assertEquals("Encoded Private Key", pem, pem2);
+        PrivateKey privateKey2 = manager.decodePrivateKey(pem2, caPassword);
+        assertEquals("  The encoded and decoded private keys don't match.", privateKey, privateKey2);
 
         logger.info("  Generating a self-signed CA certificate.");
         String caSubject = "CN=Crater Dog Technologies Private Certificate Authority, O=Crater Dog Technologies, C=US";

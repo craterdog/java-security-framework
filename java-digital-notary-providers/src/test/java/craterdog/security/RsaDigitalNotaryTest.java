@@ -96,9 +96,14 @@ public class RsaDigitalNotaryTest {
         NotaryKey notaryKey = notary.generateNotaryKey();
         char[] password = notaryKey.keyId.toString().toCharArray();
         String json = notary.serializeNotaryKey(notaryKey, password);
-        // this should fail ... not sure how
-        NotaryKey copy = notary.deserializeNotaryKey(json, "not the right password".toCharArray());
-        assertTrue("  Password functionality check failed. notaryKey should not equal copy", ! notaryKey.equals(copy));
+        try {
+            notary.deserializeNotaryKey(json, "not the right password".toCharArray());
+            fail("  The different password should have caused a failure.");
+        } catch (IOException e) {
+            // expected
+        }
+        NotaryKey copy = notary.deserializeNotaryKey(json, password);
+        assertTrue("  The serialization and deserialization did not result in the same notary key.", notaryKey.equals(copy));
     }
 
 

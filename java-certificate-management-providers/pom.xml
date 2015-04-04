@@ -52,7 +52,7 @@
     <properties>
         <java-general-utilities-version>3.6</java-general-utilities-version>
         <java-primitive-types-version>3.4</java-primitive-types-version>
-        <bouncy-castle-version>1.46</bouncy-castle-version>
+        <bouncy-castle-version>1.52</bouncy-castle-version>
     </properties>
 
     <dependencies>
@@ -73,7 +73,7 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcmail-jdk16</artifactId>
+            <artifactId>bcmail-jdk15on</artifactId>
             <version>${bouncy-castle-version}</version>
         </dependency>
     </dependencies>

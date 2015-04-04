@@ -10,30 +10,50 @@
 package craterdog.security;
 
 import craterdog.utils.RandomUtils;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.*;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 import javax.security.auth.x500.X500Principal;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMReader;
-import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.PEMException;
+import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.PKCS8Generator;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JcaPKCS8Generator;
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
 import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.InputDecryptorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.x509.extension.AuthorityKeyIdentifierStructure;
-import org.bouncycastle.x509.extension.SubjectKeyIdentifierStructure;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.bouncycastle.pkcs.PKCSException;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
+import org.bouncycastle.pkcs.jcajce.JcePKCSPBEOutputEncryptorBuilder;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.util.io.pem.PemWriter;
 
 
 /**
@@ -114,9 +134,11 @@ public final class RsaCertificateManager extends CertificateManager {
             X500Principal subject = new X500Principal(subjectString);
             X509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(issuer, serialNumber,
                     startDate, expiryDate, subject, publicKey);
-            builder.addExtension(X509Extension.authorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(publicKey));
-            builder.addExtension(X509Extension.subjectKeyIdentifier, false, new SubjectKeyIdentifierStructure(publicKey));
-            builder.addExtension(X509Extension.basicConstraints, true, new BasicConstraints(0));  // adds CA:TRUE extension
+            JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
+            builder.addExtension(Extension.authorityKeyIdentifier, false, extUtils.createAuthorityKeyIdentifier(publicKey));
+            builder.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey));
+            builder.addExtension(Extension.basicConstraints, true, new BasicConstraints(0));  // adds CA:TRUE extension
+            builder.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign | KeyUsage.cRLSign));
             ContentSigner signer = new JcaContentSignerBuilder(ASYMMETRIC_SIGNATURE_ALGORITHM)
                     .setProvider(PROVIDER_NAME).build(privateKey);
             X509Certificate result = new JcaX509CertificateConverter().setProvider(PROVIDER_NAME)
@@ -127,7 +149,7 @@ public final class RsaCertificateManager extends CertificateManager {
             logger.exit();
             return result;
 
-        } catch (CertificateException | InvalidKeyException | OperatorCreationException |
+        } catch (CertIOException | CertificateException | InvalidKeyException | OperatorCreationException |
                 NoSuchProviderException | NoSuchAlgorithmException | SignatureException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new certificate authority.", e);
             throw logger.throwing(exception);
@@ -155,12 +177,14 @@ public final class RsaCertificateManager extends CertificateManager {
 
             logger.debug("Creating the CSR...");
             X500Principal subject = new X500Principal(subjectString);
-            PKCS10CertificationRequest result = new PKCS10CertificationRequest(ASYMMETRIC_SIGNATURE_ALGORITHM, subject, publicKey, null, privateKey, PROVIDER_NAME);
+            ContentSigner signer = new JcaContentSignerBuilder(ASYMMETRIC_SIGNATURE_ALGORITHM).build(privateKey);
+            PKCS10CertificationRequest result = new JcaPKCS10CertificationRequestBuilder(subject, publicKey)
+                    .setLeaveOffEmptyAttributes(true).build(signer);
 
             logger.exit();
             return result;
 
-        } catch (InvalidKeyException | NoSuchProviderException | NoSuchAlgorithmException | SignatureException e) {
+        } catch (OperatorCreationException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new certificate signing request.", e);
             throw logger.throwing(exception);
         }
@@ -188,8 +212,8 @@ public final class RsaCertificateManager extends CertificateManager {
             logger.entry();
 
             logger.debug("Extract public key and subject from the CSR...");
-            PublicKey publicKey = request.getPublicKey();
-            String subject = request.getCertificationRequestInfo().getSubject().toString();
+            PublicKey publicKey = new JcaPEMKeyConverter().getPublicKey(request.getSubjectPublicKeyInfo());
+            String subject = request.getSubject().toString();
 
             logger.debug("Generate and sign the certificate...");
             X509Certificate result = createCertificate(caPrivateKey, caCertificate, publicKey, subject, serialNumber, lifetime);
@@ -197,7 +221,7 @@ public final class RsaCertificateManager extends CertificateManager {
             logger.exit();
             return result;
 
-        } catch (InvalidKeyException | NoSuchProviderException | NoSuchAlgorithmException e) {
+        } catch (PEMException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to sign a certificate.", e);
             throw logger.throwing(exception);
         }
@@ -217,8 +241,12 @@ public final class RsaCertificateManager extends CertificateManager {
             X500Principal subject = new X500Principal(subjectString);
             X509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(issuer, serialNumber,
                     startDate, expiryDate, subject, publicKey);
-            builder.addExtension(X509Extension.authorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(caCertificate));
-            builder.addExtension(X509Extension.subjectKeyIdentifier, false, new SubjectKeyIdentifierStructure(publicKey));
+            JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
+            builder.addExtension(Extension.authorityKeyIdentifier, false, extUtils.createAuthorityKeyIdentifier(caCertificate));
+            builder.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey));
+            builder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+            builder.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
+
             ContentSigner signer = new JcaContentSignerBuilder(ASYMMETRIC_SIGNATURE_ALGORITHM)
                     .setProvider(PROVIDER_NAME).build(caPrivateKey);
             X509Certificate result = new JcaX509CertificateConverter().setProvider(PROVIDER_NAME)
@@ -229,8 +257,8 @@ public final class RsaCertificateManager extends CertificateManager {
             logger.exit();
             return result;
 
-        } catch (CertificateException | InvalidKeyException | OperatorCreationException |
-                NoSuchProviderException | NoSuchAlgorithmException | SignatureException e) {
+        } catch (CertIOException | OperatorCreationException | CertificateException | NoSuchAlgorithmException |
+                InvalidKeyException | NoSuchProviderException | SignatureException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new certificate.", e);
             throw logger.throwing(exception);
         }
@@ -240,8 +268,8 @@ public final class RsaCertificateManager extends CertificateManager {
     @Override
     public String encodePublicKey(PublicKey key) {
         logger.entry();
-        try (StringWriter swriter = new StringWriter(); PEMWriter pwriter = new PEMWriter(swriter)) {
-            pwriter.writeObject(key);
+        try (StringWriter swriter = new StringWriter(); PemWriter pwriter = new PemWriter(swriter)) {
+            pwriter.writeObject(new PemObject("PUBLIC KEY", key.getEncoded()));
             pwriter.flush();
             String result = swriter.toString();
             logger.exit();
@@ -256,11 +284,14 @@ public final class RsaCertificateManager extends CertificateManager {
     @Override
     public PublicKey decodePublicKey(String pem) {
         logger.entry();
-        try (StringReader sreader = new StringReader(pem); PEMReader preader = new PEMReader(sreader)) {
-            PublicKey result = (PublicKey) preader.readObject();
+        try (StringReader sreader = new StringReader(pem); PemReader preader = new PemReader(sreader)) {
+            KeyFactory factory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE, PROVIDER_NAME);
+            byte[] keyBytes = preader.readPemObject().getContent();
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+            PublicKey result = factory.generatePublic(keySpec);
             logger.exit();
             return result;
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a public key.", e);
             throw logger.throwing(exception);
         }
@@ -270,16 +301,16 @@ public final class RsaCertificateManager extends CertificateManager {
     @Override
     public String encodePrivateKey(PrivateKey key, char[] password) {
         logger.entry();
-        PKCS8Generator generator = new PKCS8Generator(key);
-        generator.setPassword(password);
-        generator.setSecureRandom(RandomUtils.generator);
-        try (StringWriter swriter = new StringWriter(); PEMWriter pwriter = new PEMWriter(swriter, BouncyCastleProvider.PROVIDER_NAME)) {
+        try (StringWriter swriter = new StringWriter(); PemWriter pwriter = new PemWriter(swriter)) {
+            OutputEncryptor encryptor = new JcePKCSPBEOutputEncryptorBuilder(NISTObjectIdentifiers.id_aes128_CBC)
+                    .setProvider(PROVIDER_NAME).build(password);
+            PKCS8Generator generator = new JcaPKCS8Generator(key, encryptor);
             pwriter.writeObject(generator);
             pwriter.flush();
             String result = swriter.toString();
             logger.exit();
             return result;
-        } catch (IOException e) {
+        } catch (IOException | OperatorCreationException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to encode a private key.", e);
             throw logger.throwing(exception);
         }
@@ -289,12 +320,18 @@ public final class RsaCertificateManager extends CertificateManager {
     @Override
     public PrivateKey decodePrivateKey(String pem, char[] password) {
         logger.entry();
-        try (StringReader sreader = new StringReader(pem); PEMReader preader = new PEMReader(sreader, () -> password, BouncyCastleProvider.PROVIDER_NAME)) {
-            PrivateKey result = (PrivateKey) preader.readObject();
+        try (StringReader sreader = new StringReader(pem); PemReader preader = new PemReader(sreader)) {
+            PEMParser pemParser = new PEMParser(preader);
+            PKCS8EncryptedPrivateKeyInfo pinfo = (PKCS8EncryptedPrivateKeyInfo) pemParser.readObject();
+            InputDecryptorProvider provider = new JceOpenSSLPKCS8DecryptorProviderBuilder().build(password);
+            byte[] keyBytes = pinfo.decryptPrivateKeyInfo(provider).getEncoded();
+            KeyFactory factory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE, PROVIDER_NAME);
+            PrivateKey result = factory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
             logger.exit();
             return result;
-        } catch (IOException e) {
-            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a public key.", e);
+        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException |
+                OperatorCreationException | PKCSException e) {
+            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a private key.", e);
             throw logger.throwing(exception);
         }
     }
@@ -312,8 +349,8 @@ public final class RsaCertificateManager extends CertificateManager {
      */
     public String encodeSigningRequest(PKCS10CertificationRequest csr) {
         logger.entry();
-        try (StringWriter swriter = new StringWriter(); PEMWriter pwriter = new PEMWriter(swriter)) {
-            pwriter.writeObject(csr);
+        try (StringWriter swriter = new StringWriter(); PemWriter pwriter = new PemWriter(swriter)) {
+            pwriter.writeObject(new PemObject("CERTIFICATE REQUEST", csr.getEncoded()));
             pwriter.flush();
             String result = swriter.toString();
             logger.exit();
@@ -336,8 +373,9 @@ public final class RsaCertificateManager extends CertificateManager {
      */
     public PKCS10CertificationRequest decodeSigningRequest(String csr) {
         logger.entry();
-        try (StringReader sreader = new StringReader(csr); PEMReader preader = new PEMReader(sreader)) {
-            PKCS10CertificationRequest result = (PKCS10CertificationRequest) preader.readObject();
+        try (StringReader sreader = new StringReader(csr); PemReader preader = new PemReader(sreader)) {
+            byte[] requestBytes = preader.readPemObject().getContent();
+            PKCS10CertificationRequest result = new PKCS10CertificationRequest(requestBytes);
             logger.exit();
             return result;
         } catch (IOException e) {
@@ -350,13 +388,13 @@ public final class RsaCertificateManager extends CertificateManager {
     @Override
     public String encodeCertificate(X509Certificate certificate) {
         logger.entry();
-        try (StringWriter swriter = new StringWriter(); PEMWriter pwriter = new PEMWriter(swriter)) {
-            pwriter.writeObject(certificate);
+        try (StringWriter swriter = new StringWriter(); PemWriter pwriter = new PemWriter(swriter)) {
+            pwriter.writeObject(new PemObject("CERTIFICATE", certificate.getEncoded()));
             pwriter.flush();
             String result = swriter.toString();
             logger.exit();
             return result;
-        } catch (IOException e) {
+        } catch (IOException | CertificateEncodingException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to encode a certificate.", e);
             throw logger.throwing(exception);
         }
@@ -366,11 +404,14 @@ public final class RsaCertificateManager extends CertificateManager {
     @Override
     public X509Certificate decodeCertificate(String pem) {
         logger.entry();
-        try (StringReader sreader = new StringReader(pem); PEMReader preader = new PEMReader(sreader)) {
-            X509Certificate result = (X509Certificate) preader.readObject();
+        try (StringReader sreader = new StringReader(pem); PemReader preader = new PemReader(sreader)) {
+            byte[] requestBytes = preader.readPemObject().getContent();
+            CertificateFactory factory = CertificateFactory.getInstance("X.509");
+            ByteArrayInputStream in = new ByteArrayInputStream(requestBytes);
+            X509Certificate result = (X509Certificate) factory.generateCertificate(in);
             logger.exit();
             return result;
-        } catch (IOException e) {
+        } catch (IOException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a certificate.", e);
             throw logger.throwing(exception);
         }
