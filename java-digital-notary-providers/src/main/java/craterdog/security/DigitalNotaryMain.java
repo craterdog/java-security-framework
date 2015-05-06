@@ -26,7 +26,7 @@ import org.apache.commons.io.FileUtils;
  * This class is used to run the <code>RsaDigitalNotary</code> methods from
  * the command line.
  *
- * @author Jeff Webb
+ * @author web-online
  */
 public class DigitalNotaryMain {
 
