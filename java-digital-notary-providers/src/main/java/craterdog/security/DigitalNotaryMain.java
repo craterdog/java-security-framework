@@ -32,6 +32,8 @@ public class DigitalNotaryMain {
 
     private static final Notarization notarization = new RsaDigitalNotary();
 
+    private static final String DEFAULT_OUT_FILE = "notary-key.json";
+
     private static final String CMD_LINE_SYNTAX = "generate-notary-key [-pubfile <pem file> -prvfile <pem file>]";
 
     public static void main(String[] args) throws ParseException, IOException {
@@ -67,7 +69,7 @@ public class DigitalNotaryMain {
                 notarization.documentIsValid("test document", seal, publicKey);
             }
             char[] password = System.console().readPassword("verficationKey password: ");
-            System.out.println(notarization.serializeNotaryKey(notaryKey, password));
+            FileUtils.writeStringToFile(new File(DEFAULT_OUT_FILE), notarization.serializeNotaryKey(notaryKey, password));
         } catch (MissingArgumentException | FileNotFoundException ex) {
             System.out.println(ex.getMessage());
             help.printHelp(CMD_LINE_SYNTAX, options);
