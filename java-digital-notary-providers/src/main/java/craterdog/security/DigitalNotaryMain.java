@@ -85,18 +85,17 @@ public class DigitalNotaryMain extends DefaultParser {
      * Utility method for writing an Object out to a file.
      * @param fileName the name of the file to write
      * @param data the data to be written by calling toString
-     * @throws IOException 
+     * @throws IOException
      */
     public static void writeObjectToFile(String fileName, Object data) throws IOException {
         FileUtils.writeStringToFile(new File(fileName), data.toString());
-        System.out.println(fileName + " has been created");
     }
 
     /**
      * Parse the command line arguments with the given additionalOptions.
      * @param arguments command line arguments
      * @param additionalOptions options to add for parsing/validation
-     * @throws ParseException 
+     * @throws ParseException
      */
     public void parse(String[] arguments, Option... additionalOptions) throws ParseException {
         Option helpOption = new Option("help", false, "print this message");
@@ -116,7 +115,7 @@ public class DigitalNotaryMain extends DefaultParser {
 
     /**
      * Print a help message with a usage
-     * @param script_name 
+     * @param script_name
      */
     public void printHelp(String script_name) {
         new HelpFormatter().printHelp(script_name, options, true);
