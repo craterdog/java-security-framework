@@ -14,8 +14,8 @@
 
     <parent>
         <groupId>com.craterdog.maven-parent-poms</groupId>
-        <artifactId>java-pojo</artifactId>
-        <version>3.11</version>
+        <artifactId>java-api</artifactId>
+        <version>3.12</version>
         <relativePath />
     </parent>
 

@@ -28,9 +28,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 
 /**
@@ -38,8 +35,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *
  * @author Derk Norton
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:META-INF/spring/craterdog-secure-messaging-providers.xml"})
 public class RsaAesMessageCryptexTest {
 
     static XLogger logger = XLoggerFactory.getXLogger(RsaAesMessageCryptexTest.class);
@@ -62,8 +57,7 @@ public class RsaAesMessageCryptexTest {
     }
 
 
-    @Autowired
-    private MessageCryptex cryptex;
+    static private final MessageCryptex cryptex = new RsaAesMessageCryptex();
 
 
     /**
