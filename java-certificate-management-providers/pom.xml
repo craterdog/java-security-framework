@@ -51,7 +51,7 @@
 
     <properties>
         <java-general-utilities-version>3.6</java-general-utilities-version>
-        <java-primitive-types-version>3.4</java-primitive-types-version>
+        <java-primitive-types-version>3.5</java-primitive-types-version>
         <bouncy-castle-version>1.52</bouncy-castle-version>
     </properties>
 

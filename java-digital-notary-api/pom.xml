@@ -50,8 +50,8 @@
     </developers>
 
     <properties>
-        <java-primitive-types-version>3.4</java-primitive-types-version>
-        <java-smart-objects-version>3.5</java-smart-objects-version>
+        <java-primitive-types-version>3.5</java-primitive-types-version>
+        <java-smart-objects-version>3.6</java-smart-objects-version>
     </properties>
 
     <dependencies>
