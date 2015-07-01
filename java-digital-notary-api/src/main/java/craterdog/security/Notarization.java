@@ -11,6 +11,7 @@ package craterdog.security;
 
 import craterdog.smart.SmartObject;
 import java.io.IOException;
+import java.net.URI;
 import java.security.PublicKey;
 
 /**
@@ -85,6 +86,42 @@ public interface Notarization {
     NotaryKey deserializeNotaryKey(String json, char[] password) throws IOException;
 
     /**
+     * This method generates a new citation using the specified location URI and document content.
+     *
+     * @param location A reference to the location of the specified document.
+     * @param document The document being cited.
+     * @return A new citation referring to the document.
+     */
+    Citation generateCitation(URI location, String document);
+
+    /**
+     * This method checks to see if the specified citation is valid.
+     *
+     * @param citation The citation to be validated.
+     * @param document The document referenced by the citation.
+     * @return Whether or not the citation is valid.
+     */
+    boolean citationIsValid(Citation citation, String document);
+
+    /**
+     * This method generates a new citation using the specified location URI and document content.
+     *
+     * @param location A reference to the location of the specified document.
+     * @param document The document being cited.
+     * @return A new citation referring to the document.
+     */
+    Citation generateCitation(URI location, SmartObject<? extends SmartObject<?>> document);
+
+    /**
+     * This method checks to see if the specified citation is valid.
+     *
+     * @param citation The citation to be validated.
+     * @param document The document referenced by the citation.
+     * @return Whether or not the citation is valid.
+     */
+    boolean citationIsValid(Citation citation, SmartObject<? extends SmartObject<?>> document);
+
+    /**
      * This method generates a watermark defining the lifetime of a new document as well as
      * the version of the algorithm used to sign and verify the document.
      *
@@ -109,9 +146,10 @@ public interface Notarization {
      * @param documentType The type of document being notarized.
      * @param document The document to be notarized.
      * @param notaryKey The notary key used to notarize the document.
+     * @param certificate A reference to the digital certificate that is associated with the notary key.
      * @return The newly generated digital seal.
      */
-    DigitalSeal notarizeDocument(String documentType, String document, NotaryKey notaryKey);
+    DigitalSeal notarizeDocument(String documentType, String document, NotaryKey notaryKey, Citation certificate);
 
     /**
      * This method uses the specified public verification key to verify that the specified
@@ -131,9 +169,10 @@ public interface Notarization {
      * @param documentType The type of document being notarized.
      * @param document The document to be notarized.
      * @param notaryKey The notary key used to notarize the document.
+     * @param certificate A reference to the digital certificate that is associated with the notary key.
      * @return The newly generated digital seal.
      */
-    DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey);
+    DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey, Citation certificate);
 
     /**
      * This method uses the specified public verification key to verify that the specified

@@ -22,15 +22,9 @@ import org.joda.time.DateTime;
 public final class SealAttributes extends SmartObject<SealAttributes> {
 
     /**
-     * The unique identifier for the notary key that was used to generate the signature.
+     * A reference to the digital certificate that can be used to verify this digital seal.
      */
-    public Tag notaryKeyId;
-
-    /**
-     * A base 32 encoding of the SHA256 hash of the byte encoding for the public verification key
-     * associated with the signing key used to generate the signature.
-     */
-    public String sha256VerificationKeyHash;
+    public Citation certificate;
 
     /**
      * The date and time that the document was notarized.

@@ -18,9 +18,8 @@ import craterdog.smart.UseToStringAsValueMixIn;
 import craterdog.utils.Base32Utils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.security.KeyPair;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import org.joda.time.DateTime;
@@ -110,6 +109,51 @@ public final class RsaDigitalNotary implements Notarization {
 
 
     @Override
+    public Citation generateCitation(URI location, String document) {
+        logger.entry(location, document);
+        Citation citation = new Citation();
+        citation.documentLocation = location;
+        citation.sha256DocumentHash = cryptex.hashString(document);
+        logger.exit(citation);
+        return citation;
+    }
+
+
+    @Override
+    public boolean citationIsValid(Citation citation, String document) {
+        logger.entry(citation);
+        boolean result = true;
+        try {
+            validateCitation(citation, document);
+        } catch (Exception e) {
+            logger.debug("A '{}' exception was thrown while validating the following citation: {}", e.getMessage(), citation);
+            result = false;
+        }
+
+        logger.exit(result);
+        return result;
+    }
+
+
+    @Override
+    public Citation generateCitation(URI location, SmartObject<? extends SmartObject<?>> document) {
+        logger.entry(location, document);
+        Citation citation = generateCitation(location, document.toString());
+        logger.exit(citation);
+        return citation;
+    }
+
+
+    @Override
+    public boolean citationIsValid(Citation citation, SmartObject<? extends SmartObject<?>> document) {
+        logger.entry(citation);
+        boolean result = citationIsValid(citation, document.toString());
+        logger.exit(result);
+        return result;
+    }
+
+
+    @Override
     public Watermark generateWatermark(int secondsToLive) {
         logger.entry(secondsToLive);
         Watermark watermark = new Watermark();
@@ -139,8 +183,8 @@ public final class RsaDigitalNotary implements Notarization {
 
 
     @Override
-    public DigitalSeal notarizeDocument(String documentType, String document, NotaryKey notaryKey) {
-        logger.entry(document, notaryKey);
+    public DigitalSeal notarizeDocument(String documentType, String document, NotaryKey notaryKey, Citation certificate) {
+        logger.entry(document, notaryKey, certificate);
 
         logger.debug("Verifying that the notary key has not expired...");
         Watermark watermark = notaryKey.watermark;
@@ -152,16 +196,12 @@ public final class RsaDigitalNotary implements Notarization {
         String signature = generateSignature(document, signingKey);
         validateSignature(document, signature, verificationKey);
 
-        logger.debug("Generate a SHA-256 hash of the verification key...");
-        String keyHash = generateHash(verificationKey);
-
         logger.debug("Create a digital notary seal...");
         SealAttributes attributes = new SealAttributes();
-        attributes.notaryKeyId = notaryKey.keyId;
-        attributes.sha256VerificationKeyHash = keyHash;
         attributes.timestamp = DateTime.now();
         attributes.documentType = documentType;
         attributes.documentSignature = signature;
+        attributes.certificate = certificate;
         DigitalSeal seal = new DigitalSeal();
         seal.attributes = attributes;
         validateAttributes(seal);
@@ -180,10 +220,6 @@ public final class RsaDigitalNotary implements Notarization {
             logger.debug("Validating the digital seal's attributes...");
             validateAttributes(seal);
 
-            logger.debug("Validating the SHA-256 hash of the verification key...");
-            String keyHash = seal.attributes.sha256VerificationKeyHash;
-            validateHash(keyHash, verificationKey);
-
             logger.debug("Validating the notary signature of the document...");
             String signature = seal.attributes.documentSignature;
             validateSignature(document, signature, verificationKey);
@@ -200,11 +236,11 @@ public final class RsaDigitalNotary implements Notarization {
 
 
     @Override
-    public DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey) {
-        logger.entry(document, notaryKey);
+    public DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey, Citation certificate) {
+        logger.entry(document, notaryKey, certificate);
         logger.debug("Converting the document to a JSON string...");
         String documentString = document.toString();
-        DigitalSeal seal = notarizeDocument(documentType, documentString, notaryKey);
+        DigitalSeal seal = notarizeDocument(documentType, documentString, notaryKey, certificate);
         logger.exit(seal);
         return seal;
     }
@@ -221,6 +257,15 @@ public final class RsaDigitalNotary implements Notarization {
     }
 
 
+    private void validateCitation(Citation citation, String document) {
+        if (citation.documentLocation == null || citation.sha256DocumentHash == null ||
+                document == null || document.isEmpty() || citation.sha256DocumentHash.isEmpty() ||
+                !citation.sha256DocumentHash.equals(cryptex.hashString(document))) {
+            throw new RuntimeException("The citation is invalid.");
+        }
+    }
+
+
     private void validateWatermark(Watermark watermark) {
         if (watermark.expirationTimestamp.isBeforeNow()) {
             throw new RuntimeException("The notary key has expired.");
@@ -228,32 +273,11 @@ public final class RsaDigitalNotary implements Notarization {
     }
 
 
-    private String generateHash(PublicKey verificationKey) {
-        try {
-            byte[] bytes = verificationKey.getEncoded();
-            MessageDigest hasher = MessageDigest.getInstance(HASH_ALGORITHM);
-            byte[] hash = hasher.digest(bytes);
-            String hashString = Base32Utils.encode(hash);
-            return hashString;
-        } catch (NoSuchAlgorithmException | RuntimeException e) {
-            throw new RuntimeException("The following public key is invalid: " + verificationKey);
-        }
-    }
-
-
-    private void validateHash(String hash, PublicKey verificationKey) {
-        String correctHash = generateHash(verificationKey);
-        if (!hash.equals(correctHash)) {
-            throw new RuntimeException("The following public key hash is invalid: " + hash);
-        }
-    }
-
-
     private void validateAttributes(DigitalSeal seal) {
         SealAttributes attributes = seal.attributes;
-        if (attributes.notaryKeyId == null || attributes.sha256VerificationKeyHash == null ||
-                attributes.timestamp == null || attributes.documentType == null ||
-                attributes.documentType.isEmpty() || attributes.documentSignature == null) {
+        if (attributes.certificate == null || attributes.timestamp == null ||
+                attributes.documentType == null || attributes.documentType.isEmpty() ||
+                attributes.documentSignature == null || attributes.documentSignature.isEmpty()) {
             throw new RuntimeException("The following seal has invalid attributes: " + seal);
         }
     }
