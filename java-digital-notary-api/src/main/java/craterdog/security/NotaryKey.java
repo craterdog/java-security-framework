@@ -46,8 +46,11 @@ public final class NotaryKey extends SmartObject<NotaryKey> {
     public Watermark watermark;
 
 
+    /**
+     * The default constructor makes sure that the public and private keys can be marshalled
+     * properly into JSON.
+     */
     public NotaryKey() {
-        this.addSerializableClass(Tag.class);
         this.addSerializableClass(new NotaryKeyModule());
     }
 

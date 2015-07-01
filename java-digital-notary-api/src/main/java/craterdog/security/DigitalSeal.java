@@ -9,7 +9,6 @@
  ************************************************************************/
 package craterdog.security;
 
-import craterdog.primitives.Tag;
 import craterdog.smart.SmartObject;
 
 /**
@@ -35,14 +34,5 @@ public final class DigitalSeal extends SmartObject<DigitalSeal> {
      * </ol>
      */
     public String notarySignature;
-
-
-    /**
-     * The default constructor ensures that the custom attribute types (like tags) will be
-     * formatted correctly when printed.
-     */
-    public DigitalSeal() {
-        this.addSerializableClass(Tag.class);
-    }
 
 }

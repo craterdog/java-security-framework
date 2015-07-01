@@ -11,7 +11,6 @@ package craterdog.security;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import craterdog.primitives.Tag;
 import craterdog.smart.SmartObject;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -69,15 +68,6 @@ public class DocumentAttributes extends SmartObject<DocumentAttributes> {
     @JsonAnyGetter
     public Map<String, Object> any() {
         return attributes;
-    }
-
-
-    /**
-     * The default constructor ensures that the custom attribute types (like tags) will be
-     * formatted correctly when printed.
-     */
-    public DocumentAttributes() {
-        this.addSerializableClass(Tag.class);
     }
 
 }

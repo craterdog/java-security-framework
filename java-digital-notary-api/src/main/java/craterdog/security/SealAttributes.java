@@ -9,7 +9,6 @@
  ************************************************************************/
 package craterdog.security;
 
-import craterdog.primitives.Tag;
 import craterdog.smart.SmartObject;
 import org.joda.time.DateTime;
 
@@ -47,14 +46,5 @@ public final class SealAttributes extends SmartObject<SealAttributes> {
      * </ol>
      */
     public String documentSignature;
-
-
-    /**
-     * The default constructor ensures that the custom attribute types (like tags) will be
-     * formatted correctly when printed.
-     */
-    public SealAttributes() {
-        this.addSerializableClass(Tag.class);
-    }
 
 }

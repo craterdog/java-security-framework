@@ -9,7 +9,6 @@
  ************************************************************************/
 package craterdog.security;
 
-import craterdog.primitives.Tag;
 import craterdog.smart.SmartObject;
 import java.util.List;
 
@@ -29,14 +28,5 @@ public class NotarizedDocument extends SmartObject<NotarizedDocument> {
      * The digital seals notarizing the document.
      */
     public List<DigitalSeal> seals;
-
-
-    /**
-     * The default constructor ensures that the custom attribute types (like tags) will be
-     * formatted correctly when printed.
-     */
-    public NotarizedDocument() {
-        this.addSerializableClass(Tag.class);
-    }
 
 }
