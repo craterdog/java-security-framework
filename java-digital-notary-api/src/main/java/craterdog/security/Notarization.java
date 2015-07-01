@@ -140,6 +140,48 @@ public interface Notarization {
     boolean watermarkIsValid(Watermark watermark);
 
     /**
+     * This method generates a base 32 encoded signature of the specified document using
+     * the specified notary key.
+     *
+     * @param document The document to be signed.
+     * @param notaryKey The notary key used to sign the document.
+     * @return The base 32 encoded signature.
+     */
+    String generateSignature(String document, NotaryKey notaryKey);
+
+    /**
+     * This method verifies that the specified document and signature match using the
+     * specified verification key.
+     *
+     * @param document The document to be validated.
+     * @param signature The base 32 encoded signature of the document.
+     * @param verificationKey The public key that should be used to verify the signature.
+     * @return Whether or not the signature is valid.
+     */
+    boolean signatureIsValid(String document, String signature, PublicKey verificationKey);
+
+    /**
+     * This method generates a base 32 encoded signature of the specified document using
+     * the specified notary key.
+     *
+     * @param document The document to be signed.
+     * @param notaryKey The notary key used to sign the document.
+     * @return The base 32 encoded signature.
+     */
+    String generateSignature(SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey);
+
+    /**
+     * This method verifies that the specified document and signature match using the
+     * specified verification key.
+     *
+     * @param document The document to be validated.
+     * @param signature The base 32 encoded signature of the document.
+     * @param verificationKey The public key that should be used to verify the signature.
+     * @return Whether or not the signature is valid.
+     */
+    boolean signatureIsValid(SmartObject<? extends SmartObject<?>> document, String signature, PublicKey verificationKey);
+
+    /**
      * This method generates a digital seal from the specified document using the specified
      * private notary key.
      *

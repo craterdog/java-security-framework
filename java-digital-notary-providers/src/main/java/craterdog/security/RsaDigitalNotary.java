@@ -129,7 +129,6 @@ public final class RsaDigitalNotary implements Notarization {
             logger.debug("A '{}' exception was thrown while validating the following citation: {}", e.getMessage(), citation);
             result = false;
         }
-
         logger.exit(result);
         return result;
     }
@@ -148,6 +147,72 @@ public final class RsaDigitalNotary implements Notarization {
     public boolean citationIsValid(Citation citation, SmartObject<? extends SmartObject<?>> document) {
         logger.entry(citation);
         boolean result = citationIsValid(citation, document.toString());
+        logger.exit(result);
+        return result;
+    }
+
+
+    @Override
+    public String generateSignature(String document, NotaryKey notaryKey) {
+        logger.entry(document, notaryKey);
+
+        logger.debug("Verifying that the notary key has not expired...");
+        Watermark watermark = notaryKey.watermark;
+        validateWatermark(watermark);
+
+        logger.debug("Signing the document...");
+        PrivateKey signingKey = notaryKey.signingKey;
+        String signature = generateSignature(document, signingKey);
+
+        logger.exit(signature);
+        return signature;
+    }
+
+
+    @Override
+    public boolean signatureIsValid(String document, String signature, PublicKey verificationKey) {
+        logger.entry(document, signature, verificationKey);
+        boolean result = true;
+        try {
+            validateSignature(document, signature, verificationKey);
+        } catch (Exception e) {
+            logger.debug("A '{}' exception was thrown while validating the following signature: {}", e.getMessage(), signature);
+            result = false;
+        }
+        logger.exit(result);
+        return result;
+    }
+
+
+    @Override
+    public String generateSignature(SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey) {
+        logger.entry(document, notaryKey);
+
+        logger.debug("Verifying that the notary key has not expired...");
+        Watermark watermark = notaryKey.watermark;
+        validateWatermark(watermark);
+
+        logger.debug("Signing the document...");
+        PrivateKey signingKey = notaryKey.signingKey;
+        String documentString = document.toString();
+        String signature = generateSignature(documentString, signingKey);
+
+        logger.exit(signature);
+        return signature;
+    }
+
+
+    @Override
+    public boolean signatureIsValid(SmartObject<? extends SmartObject<?>> document, String signature, PublicKey verificationKey) {
+        logger.entry(document, signature, verificationKey);
+        boolean result = true;
+        try {
+            String documentString = document.toString();
+            validateSignature(documentString, signature, verificationKey);
+        } catch (Exception e) {
+            logger.debug("A '{}' exception was thrown while validating the following signature: {}", e.getMessage(), signature);
+            result = false;
+        }
         logger.exit(result);
         return result;
     }
@@ -190,11 +255,9 @@ public final class RsaDigitalNotary implements Notarization {
         Watermark watermark = notaryKey.watermark;
         validateWatermark(watermark);
 
-        logger.debug("Signing and verifying the document...");
-        PublicKey verificationKey = notaryKey.verificationKey;
+        logger.debug("Signing the document...");
         PrivateKey signingKey = notaryKey.signingKey;
         String signature = generateSignature(document, signingKey);
-        validateSignature(document, signature, verificationKey);
 
         logger.debug("Create a digital notary seal...");
         SealAttributes attributes = new SealAttributes();
@@ -238,9 +301,27 @@ public final class RsaDigitalNotary implements Notarization {
     @Override
     public DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey, Citation certificate) {
         logger.entry(document, notaryKey, certificate);
-        logger.debug("Converting the document to a JSON string...");
+
+        logger.debug("Verifying that the notary key has not expired...");
+        Watermark watermark = notaryKey.watermark;
+        validateWatermark(watermark);
+
+        logger.debug("Signing the document...");
         String documentString = document.toString();
-        DigitalSeal seal = notarizeDocument(documentType, documentString, notaryKey, certificate);
+        PrivateKey signingKey = notaryKey.signingKey;
+        String signature = generateSignature(documentString, signingKey);
+
+        logger.debug("Create a digital notary seal...");
+        SealAttributes attributes = new SealAttributes();
+        attributes.timestamp = DateTime.now();
+        attributes.documentType = documentType;
+        attributes.documentSignature = signature;
+        attributes.certificate = certificate;
+        DigitalSeal seal = new DigitalSeal();
+        seal.attributes = attributes;
+        validateAttributes(seal);
+        seal.notarySignature = generateSignature(attributes.toString(), signingKey);
+
         logger.exit(seal);
         return seal;
     }
@@ -249,9 +330,22 @@ public final class RsaDigitalNotary implements Notarization {
     @Override
     public boolean documentIsValid(SmartObject<? extends SmartObject<?>> document, DigitalSeal seal, PublicKey verificationKey) {
         logger.entry(document, verificationKey, seal);
-        logger.debug("Converting the document to a JSON string...");
-        String documentString = document.toString();
-        boolean result = documentIsValid(documentString, seal, verificationKey);
+        boolean result = true;
+        try {
+            logger.debug("Validating the digital seal's attributes...");
+            validateAttributes(seal);
+
+            logger.debug("Validating the notary signature of the document...");
+            String documentString = document.toString();
+            String signature = seal.attributes.documentSignature;
+            validateSignature(documentString, signature, verificationKey);
+
+            logger.debug("Validating the notary signature of the digital seal...");
+            validateSignature(seal.attributes.toString(), seal.notarySignature, verificationKey);
+        } catch (Exception e) {
+            logger.debug("A '{}' exception was thrown while validating the following document: {}", e.getMessage(), document);
+            result = false;
+        }
         logger.exit(result);
         return result;
     }
