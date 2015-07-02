@@ -248,8 +248,8 @@ public final class RsaDigitalNotary implements Notarization {
 
 
     @Override
-    public DigitalSeal notarizeDocument(String documentType, String document, NotaryKey notaryKey, Citation certificate) {
-        logger.entry(document, notaryKey, certificate);
+    public DigitalSeal notarizeDocument(String documentType, String document, NotaryKey notaryKey, Citation certificateCitation) {
+        logger.entry(document, notaryKey, certificateCitation);
 
         logger.debug("Verifying that the notary key has not expired...");
         Watermark watermark = notaryKey.watermark;
@@ -264,7 +264,7 @@ public final class RsaDigitalNotary implements Notarization {
         attributes.timestamp = DateTime.now();
         attributes.documentType = documentType;
         attributes.documentSignature = signature;
-        attributes.certificateCitation = certificate;
+        attributes.certificateCitation = certificateCitation;
         DigitalSeal seal = new DigitalSeal();
         seal.attributes = attributes;
         validateAttributes(seal);
@@ -299,8 +299,8 @@ public final class RsaDigitalNotary implements Notarization {
 
 
     @Override
-    public DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey, Citation certificate) {
-        logger.entry(document, notaryKey, certificate);
+    public DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey, Citation certificateCitation) {
+        logger.entry(document, notaryKey, certificateCitation);
 
         logger.debug("Verifying that the notary key has not expired...");
         Watermark watermark = notaryKey.watermark;
@@ -316,7 +316,7 @@ public final class RsaDigitalNotary implements Notarization {
         attributes.timestamp = DateTime.now();
         attributes.documentType = documentType;
         attributes.documentSignature = signature;
-        attributes.certificateCitation = certificate;
+        attributes.certificateCitation = certificateCitation;
         DigitalSeal seal = new DigitalSeal();
         seal.attributes = attributes;
         validateAttributes(seal);

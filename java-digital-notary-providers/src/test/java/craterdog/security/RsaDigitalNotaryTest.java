@@ -61,9 +61,9 @@ public class RsaDigitalNotaryTest {
         outputExample("NotaryKey.json", notaryKey);
 
         logger.info("  Generating the location of the certificate...");
-        Citation certificate = new Citation();
-        certificate.documentLocation = new URI("http://foo.com/IdentityManagement/certificate/W9WF1YMQRMW4Q1DH2YHJXR7C5RSLRQ0N");
-        certificate.sha256DocumentHash = "areallylonghashvalue";
+        Citation certificateCitation = new Citation();
+        certificateCitation.documentLocation = new URI("http://foo.com/IdentityManagement/certificate/W9WF1YMQRMW4Q1DH2YHJXR7C5RSLRQ0N");
+        certificateCitation.sha256DocumentHash = "areallylonghashvalue";
 
         logger.info("  Serializing and deserializing the notary key...");
         char[] password = notaryKey.keyId.toString().toCharArray();
@@ -75,7 +75,7 @@ public class RsaDigitalNotaryTest {
         logger.info("  Notarizing a string document...");
         String documentType = "Test Document";
         String stringDocument = "This document MUST be notarized!";
-        DigitalSeal seal = notary.notarizeDocument(documentType, stringDocument, notaryKey, certificate);
+        DigitalSeal seal = notary.notarizeDocument(documentType, stringDocument, notaryKey, certificateCitation);
         outputExample("DigitalSeal.json", seal);
 
         logger.info("  Verifying the notary seal...");
@@ -88,7 +88,7 @@ public class RsaDigitalNotaryTest {
 
         logger.info("  Notarizing a smart document...");
         documentType = "Watermark";
-        seal = notary.notarizeDocument(documentType, watermark, notaryKey, certificate);
+        seal = notary.notarizeDocument(documentType, watermark, notaryKey, certificateCitation);
 
         logger.info("  Verifying the notary seal...");
         assertTrue("  Invalid notary seal.", notary.documentIsValid(watermark, seal, verificationKey));
