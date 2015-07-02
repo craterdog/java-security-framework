@@ -2,10 +2,9 @@
 
 ### A Simple to Use Java Security Framework
 The Java security APIs define a very powerful framework for implementing common security related tasks
-like key generation, signing and verifying documents, and encrypting and decrypting data. As with all
-low level frameworks, it provides a great deal of flexibility in choosing the algorithms and key sizes
-to be used for these tasks. However, this flexibility can cause a significant amount of confusion for
-anyone who is not a security expert.
+like key generation, and encrypting and decrypting data. As with all low level frameworks, it provides
+a great deal of flexibility in choosing the algorithms and key sizes to be used for these tasks. However,
+this flexibility can cause a significant amount of confusion for anyone who is not a security expert.
 
 The _Crater Dog Technologies_™ Java Security Framework makes sensible choices for these algorithms based
 on the latest research around potential vulnerabilities. It provides a high level framework that is easy
@@ -16,7 +15,6 @@ The following highlights the main capabilities that this multi-module maven proj
 
  * symmetric (shared) key generation and formatting
  * asymmetric (public/private) key generation and formatting
- * signing (notarization) and validation of documents
  * encryption and decryption of keys and data
  * private certificate authority (CA) creation
  * client certificate generation and signing
