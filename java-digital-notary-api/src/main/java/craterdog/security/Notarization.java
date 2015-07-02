@@ -9,6 +9,7 @@
  ************************************************************************/
 package craterdog.security;
 
+import craterdog.primitives.Tag;
 import craterdog.smart.SmartObject;
 import java.io.IOException;
 import java.net.URI;
@@ -84,6 +85,16 @@ public interface Notarization {
      * @throws java.io.IOException
      */
     NotaryKey deserializeNotaryKey(String json, char[] password) throws IOException;
+
+    /**
+     * This method generates a location URI for the specified document type and identifier.
+     *
+     * @param baseUri The base URI for the location.
+     * @param documentType The type of document.
+     * @param documentId The globally unique identifier for the document.
+     * @return The document location.
+     */
+    URI generateLocation(URI baseUri, String documentType, Tag documentId);
 
     /**
      * This method generates a new citation using the specified location URI and document content.

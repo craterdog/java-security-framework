@@ -109,6 +109,27 @@ public final class RsaDigitalNotary implements Notarization {
 
 
     @Override
+    public URI generateLocation(URI baseUri, String documentType, Tag documentId) {
+        logger.entry(baseUri, documentType, documentId);
+        StringBuilder locationString = new StringBuilder(baseUri.toString());
+        locationString.append("/");
+        locationString.append(documentType);
+        locationString.append("/");
+        locationString.append(documentId);
+        URI location;
+        try {
+            location = new URI(locationString.toString());
+        } catch (Exception e) {
+            // this should never happen!!!
+            logger.error("Unable to construct the location URI: {}", locationString);
+            throw new RuntimeException("invalid.location.uri", e);
+        }
+        logger.exit(location);
+        return location;
+    }
+
+
+    @Override
     public Citation generateCitation(URI location, String document) {
         logger.entry(location, document);
         Citation citation = new Citation();
