@@ -188,10 +188,10 @@ public interface Notarization {
      * @param documentType The type of document being notarized.
      * @param document The document to be notarized.
      * @param notaryKey The notary key used to notarize the document.
-     * @param certificate A reference to the digital certificate that is associated with the notary key.
+     * @param certificateCitation A citation to the digital certificate that can be used to verify the seal.
      * @return The newly generated digital seal.
      */
-    DigitalSeal notarizeDocument(String documentType, String document, NotaryKey notaryKey, Citation certificate);
+    DigitalSeal notarizeDocument(String documentType, String document, NotaryKey notaryKey, Citation certificateCitation);
 
     /**
      * This method uses the specified public verification key to verify that the specified
@@ -211,10 +211,10 @@ public interface Notarization {
      * @param documentType The type of document being notarized.
      * @param document The document to be notarized.
      * @param notaryKey The notary key used to notarize the document.
-     * @param certificate A reference to the digital certificate that is associated with the notary key.
+     * @param certificateCitation A citation to the digital certificate that can be used to verify the seal.
      * @return The newly generated digital seal.
      */
-    DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey, Citation certificate);
+    DigitalSeal notarizeDocument(String documentType, SmartObject<? extends SmartObject<?>> document, NotaryKey notaryKey, Citation certificateCitation);
 
     /**
      * This method uses the specified public verification key to verify that the specified

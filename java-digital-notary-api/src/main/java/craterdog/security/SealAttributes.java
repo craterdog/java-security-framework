@@ -21,9 +21,9 @@ import org.joda.time.DateTime;
 public final class SealAttributes extends SmartObject<SealAttributes> {
 
     /**
-     * A reference to the digital certificate that can be used to verify this digital seal.
+     * A citation to the digital certificate that can be used to verify this digital seal.
      */
-    public Citation certificate;
+    public Citation certificateCitation;
 
     /**
      * The date and time that the document was notarized.

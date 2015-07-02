@@ -264,7 +264,7 @@ public final class RsaDigitalNotary implements Notarization {
         attributes.timestamp = DateTime.now();
         attributes.documentType = documentType;
         attributes.documentSignature = signature;
-        attributes.certificate = certificate;
+        attributes.certificateCitation = certificate;
         DigitalSeal seal = new DigitalSeal();
         seal.attributes = attributes;
         validateAttributes(seal);
@@ -316,7 +316,7 @@ public final class RsaDigitalNotary implements Notarization {
         attributes.timestamp = DateTime.now();
         attributes.documentType = documentType;
         attributes.documentSignature = signature;
-        attributes.certificate = certificate;
+        attributes.certificateCitation = certificate;
         DigitalSeal seal = new DigitalSeal();
         seal.attributes = attributes;
         validateAttributes(seal);
@@ -369,7 +369,7 @@ public final class RsaDigitalNotary implements Notarization {
 
     private void validateAttributes(DigitalSeal seal) {
         SealAttributes attributes = seal.attributes;
-        if (attributes.certificate == null || attributes.timestamp == null ||
+        if (attributes.certificateCitation == null || attributes.timestamp == null ||
                 attributes.documentType == null || attributes.documentType.isEmpty() ||
                 attributes.documentSignature == null || attributes.documentSignature.isEmpty()) {
             throw new RuntimeException("The following seal has invalid attributes: " + seal);
