@@ -49,8 +49,6 @@
     </developers>
 
     <modules>
-        <module>java-digital-notary-api</module>
-        <module>java-digital-notary-providers</module>
         <module>java-secure-messaging-api</module>
         <module>java-secure-messaging-providers</module>
         <module>java-certificate-management-api</module>
