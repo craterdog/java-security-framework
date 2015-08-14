@@ -50,7 +50,7 @@
     </developers>
 
     <properties>
-        <java-general-utilities-version>3.6</java-general-utilities-version>
+        <java-general-utilities-version>3.7</java-general-utilities-version>
     </properties>
 
     <dependencies>
