@@ -89,7 +89,7 @@ public class CertificateAuthorityGenerator {
 
         } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException |
                 NoSuchProviderException | SignatureException | IOException e) {
-            logger.info("An error occurred while attempting to generate the certificate authority:", e);
+            logger.error("An error occurred while attempting to generate the certificate authority:", e);
             System.exit(1);
         }
         System.exit(0);
