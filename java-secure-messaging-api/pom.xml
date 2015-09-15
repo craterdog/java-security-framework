@@ -30,7 +30,7 @@
 
     <groupId>com.craterdog.java-security-framework</groupId>
     <artifactId>java-secure-messaging-api</artifactId>
-    <version>3.15-SNAPSHOT</version>
+    <version>3.15</version>
     <packaging>jar</packaging>
 
     <licenses>
@@ -83,7 +83,7 @@
         <connection>scm:git:git@github.com:craterdog/java-security-framework.git</connection>
         <developerConnection>scm:git:git@github.com:craterdog/java-security-framework.git</developerConnection>
         <url>git@github.com:craterdog/java-security-framework.git</url>
-        <tag>HEAD</tag>
+        <tag>aggregator-3.15</tag>
     </scm>
 
 </project>
