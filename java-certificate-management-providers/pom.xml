@@ -50,7 +50,7 @@
     </developers>
 
     <properties>
-        <java-primitive-types-version>3.6</java-primitive-types-version>
+        <java-primitive-types-version>3.7</java-primitive-types-version>
         <bouncy-castle-version>1.52</bouncy-castle-version>
     </properties>
 
@@ -73,6 +73,21 @@
     </dependencies>
 
     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin-version}</version>
+                <configuration>
+                    <detectJavaApiLink>true</detectJavaApiLink>
+                    <links>
+                        <link>http://craterdog.github.io/java-core-interfaces/latest</link>
+                        <link>http://craterdog.github.io/java-general-utilities/latest</link>
+                        <link>http://craterdog.github.io/java-primitive-types/latest</link>
+                    </links>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <scm>
