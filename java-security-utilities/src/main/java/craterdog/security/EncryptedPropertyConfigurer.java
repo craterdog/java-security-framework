@@ -30,7 +30,7 @@ public class EncryptedPropertyConfigurer extends PropertySourcesPlaceholderConfi
     static private final String ENCRYPTED_NOTATION = "{AES-128}";
     static private final String ENCODED_KEY = "XbZHQYKRQcBoBXqU0G43Rw==";  // base 64 encoded AES-128 key
     static private final SecretKey key = new SecretKeySpec(Base64Utils.decode(ENCODED_KEY),
-            cryptex.getSymmetricEncryptionAlgorithm());
+            cryptex.getSymmetricKeyType());
 
 
     /**

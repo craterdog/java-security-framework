@@ -63,6 +63,13 @@ public interface MessageEncryption {
     public String getSymmetricEncryptionAlgorithm();
 
     /**
+     * This method returns the symmetric key type used by this cryptex.
+     *
+     * @return The type of the symmetric keys.
+     */
+    public String getSymmetricKeyType();
+
+    /**
      * This method returns the symmetric key size used by this cryptex.
      *
      * @return The size of the symmetric keys.

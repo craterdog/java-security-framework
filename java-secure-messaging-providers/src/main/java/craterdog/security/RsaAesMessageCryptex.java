@@ -19,13 +19,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.Signature;
 import java.security.spec.AlgorithmParameterSpec;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 
 /**
@@ -44,18 +42,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     static private final String ASYMMETRIC_ENCRYPTION_ALGORITHM = ASYMMETRIC_KEY_TYPE + "/NONE/OAEPWithSHA256AndMGF1Padding";
     static private final String SYMMETRIC_KEY_TYPE = "AES";
     static private final int SYMMETRIC_KEY_SIZE = 128;
-    static private final String SYMMETRIC_ENCRYPTION_ALGORITHM = SYMMETRIC_KEY_TYPE + "/CBC/PKCS7Padding";
-    static private final String PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
-
-
-    /**
-     * This default constructor creates the cryptex and initializes the security provider.
-     */
-    public RsaAesMessageCryptex() {
-        logger.entry();
-        Security.addProvider(new BouncyCastleProvider());
-        logger.exit();
-    }
+    static private final String SYMMETRIC_ENCRYPTION_ALGORITHM = SYMMETRIC_KEY_TYPE + "/CBC/PKCS5Padding";
 
 
     @Override
@@ -72,7 +59,6 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
     @Override
     public String getAsymmetricEncryptionAlgorithm() {
-        // this should be changed to the preferred algorithm after August, 2014
         return ASYMMETRIC_ENCRYPTION_ALGORITHM;
     }
 
@@ -90,6 +76,12 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
+    public String getSymmetricKeyType() {
+        return SYMMETRIC_KEY_TYPE;
+    }
+
+
+    @Override
     public String getHashAlgorithm() {
         return HASH_ALGORITHM;
     }
@@ -99,17 +91,16 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     public byte[] signBytes(PrivateKey privateKey, byte[] bytes) {
         try {
             logger.entry();
-            Signature signer = Signature.getInstance(ASYMMETRIC_SIGNATURE_ALGORITHM, PROVIDER_NAME);
+            Signature signer = Signature.getInstance(ASYMMETRIC_SIGNATURE_ALGORITHM);
             signer.initSign(privateKey);
             signer.update(bytes);
             byte[] signature = signer.sign();
             logger.exit();
             return signature;
         } catch (GeneralSecurityException e) {
-            logger.catching(e);
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to sign bytes.", e);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -118,17 +109,16 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     public boolean bytesAreValid(PublicKey certificate, byte[] bytes, byte[] signature) {
         try {
             logger.entry();
-            Signature signer = Signature.getInstance(ASYMMETRIC_SIGNATURE_ALGORITHM, PROVIDER_NAME);
+            Signature signer = Signature.getInstance(ASYMMETRIC_SIGNATURE_ALGORITHM);
             signer.initVerify(certificate);
             signer.update(bytes);
             boolean isValid = signer.verify(signature);
             logger.exit();
             return isValid;
         } catch (GeneralSecurityException e) {
-            logger.catching(e);
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to validate signed bytes.", e);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -137,16 +127,15 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     public SecretKey generateSharedKey() {
         try {
             logger.entry();
-            KeyGenerator keyGenerator = KeyGenerator.getInstance(SYMMETRIC_KEY_TYPE, PROVIDER_NAME);
+            KeyGenerator keyGenerator = KeyGenerator.getInstance(SYMMETRIC_KEY_TYPE);
             keyGenerator.init(SYMMETRIC_KEY_SIZE, RandomUtils.generator);
             SecretKey sharedKey = keyGenerator.generateKey();
             logger.exit();
             return sharedKey;
         } catch (GeneralSecurityException e) {
-            logger.catching(e);
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to generate a shared key.", e);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -155,17 +144,15 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     public byte[] encryptSharedKey(PublicKey publicKey, SecretKey sharedKey) {
         try {
             logger.entry();
-            // this should change to the real algorithm (with OAEP padding) after August, 2014
-            Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
+            Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             byte[] encryptedKey = cipher.doFinal(sharedKey.getEncoded());
             logger.exit();
             return encryptedKey;
         } catch (GeneralSecurityException e) {
-            logger.catching(e);
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to encrypt a shared key.", e);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -175,17 +162,16 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         try {
             logger.entry();
             byte[] decryptedKey;
-            Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
+            Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             decryptedKey = cipher.doFinal(encryptedKey);
-            SecretKey sharedKey = new SecretKeySpec(decryptedKey, SYMMETRIC_ENCRYPTION_ALGORITHM);
+            SecretKey sharedKey = new SecretKeySpec(decryptedKey, SYMMETRIC_KEY_TYPE);
             logger.exit();
             return sharedKey;
         } catch (GeneralSecurityException e) {
-            logger.catching(e);
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to decrypt a shared key.", e);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -197,7 +183,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.entry();
 
             logger.debug("Creating and initializing the encryption engine...");
-            Cipher cipher = Cipher.getInstance(SYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
+            Cipher cipher = Cipher.getInstance(SYMMETRIC_ENCRYPTION_ALGORITHM);
             byte[] fixedIV = new byte[16];  // all zeros
             AlgorithmParameterSpec ivSpec = new IvParameterSpec(fixedIV);
             cipher.init(Cipher.ENCRYPT_MODE, sharedKey, ivSpec);
@@ -208,10 +194,9 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.exit();
             return cipherOutputStream;
         } catch (GeneralSecurityException e) {
-            logger.catching(e);
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to encrypt a stream.", e);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -223,7 +208,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.entry();
 
             logger.debug("Creating and initializing the decryption engine...");
-            Cipher cipher = Cipher.getInstance(SYMMETRIC_ENCRYPTION_ALGORITHM, PROVIDER_NAME);
+            Cipher cipher = Cipher.getInstance(SYMMETRIC_ENCRYPTION_ALGORITHM);
             byte[] fixedIV = new byte[16];  // all zeros
             AlgorithmParameterSpec ivSpec = new IvParameterSpec(fixedIV);
             cipher.init(Cipher.DECRYPT_MODE, sharedKey, ivSpec);
@@ -234,10 +219,9 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.exit();
             return cipherInputStream;
         } catch (GeneralSecurityException e) {
-            logger.catching(e);
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to decrypt a stream.", e);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 
@@ -254,8 +238,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             return hashString;
         } catch (NoSuchAlgorithmException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to hash a string.", e);
-            logger.throwing(exception);
-            throw exception;
+            throw logger.throwing(exception);
         }
     }
 

@@ -51,7 +51,6 @@
 
     <properties>
         <java-general-utilities-version>3.7</java-general-utilities-version>
-        <bouncy-castle-version>1.52</bouncy-castle-version>
     </properties>
 
     <dependencies>
@@ -69,11 +68,6 @@
             <groupId>com.craterdog</groupId>
             <artifactId>java-general-utilities</artifactId>
             <version>${java-general-utilities-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcmail-jdk15on</artifactId>
-            <version>${bouncy-castle-version}</version>
         </dependency>
     </dependencies>
 
