@@ -33,11 +33,19 @@ public class EncryptedPropertyConfigurer extends PropertySourcesPlaceholderConfi
     private final SecretKey key;
 
 
+    /**
+     * The default constructor uses the default base 64 encoded secret key for doing the encryption.
+     */
     public EncryptedPropertyConfigurer() {
         this.key = new SecretKeySpec(Base64Utils.decode(DEFAULT_ENCODED_KEY), cryptex.getSymmetricKeyType());
     }
 
 
+    /**
+     * This constructor uses a user specified base 64 encoded secret key for doing the encryption.
+     *
+     * @param encodedKey The base 64 encoded string containing the AES-128 secret key for encryption.
+     */
     public EncryptedPropertyConfigurer(String encodedKey) {
         this.key = new SecretKeySpec(Base64Utils.decode(encodedKey), cryptex.getSymmetricKeyType());
     }
