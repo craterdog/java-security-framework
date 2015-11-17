@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.craterdog.maven-parent-poms</groupId>
         <artifactId>java-pojo</artifactId>
-        <version>3.12</version>
+        <version>3.17</version>
         <relativePath />
     </parent>
 
@@ -50,7 +50,7 @@
     </developers>
 
     <properties>
-        <java-general-utilities-version>3.7</java-general-utilities-version>
+        <java-general-utilities-version>3.8</java-general-utilities-version>
     </properties>
 
     <dependencies>

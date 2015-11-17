@@ -40,7 +40,7 @@ public class EncryptedPropertyConfigurerTest {
     static class Config {
         @Bean
         static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-            return new EncryptedPropertyConfigurer();
+            return new EncryptedPropertyConfigurer("XbZHQYKRQcBoBXqU0G43Rw==");
         }
     }
 

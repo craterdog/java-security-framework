@@ -28,9 +28,19 @@ public class EncryptedPropertyConfigurer extends PropertySourcesPlaceholderConfi
 
     static private final MessageCryptex cryptex = new RsaAesMessageCryptex();  // must be this implementation!
     static private final String ENCRYPTED_NOTATION = "{AES-128}";
-    static private final String ENCODED_KEY = "XbZHQYKRQcBoBXqU0G43Rw==";  // base 64 encoded AES-128 key
-    static private final SecretKey key = new SecretKeySpec(Base64Utils.decode(ENCODED_KEY),
-            cryptex.getSymmetricKeyType());
+    static private final String DEFAULT_ENCODED_KEY = "XbZHQYKRQcBoBXqU0G43Rw==";  // base 64 encoded AES-128 key
+
+    private final SecretKey key;
+
+
+    public EncryptedPropertyConfigurer() {
+        this.key = new SecretKeySpec(Base64Utils.decode(DEFAULT_ENCODED_KEY), cryptex.getSymmetricKeyType());
+    }
+
+
+    public EncryptedPropertyConfigurer(String encodedKey) {
+        this.key = new SecretKeySpec(Base64Utils.decode(encodedKey), cryptex.getSymmetricKeyType());
+    }
 
 
     /**
