@@ -37,7 +37,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
     static private final String ENCODING_TYPE = "AES-128-CBC-PKCS7";
     static private final String ASYMMETRIC_KEY_TYPE = "RSA";
-    static private final String HASH_ALGORITHM = "SHA256";
+    static private final String HASH_ALGORITHM = "SHA-256";
     static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = "SHA1with" + ASYMMETRIC_KEY_TYPE;
     static private final String ASYMMETRIC_ENCRYPTION_ALGORITHM = ASYMMETRIC_KEY_TYPE + "/ECB/OAEPWithSHA-256AndMGF1Padding";
     static private final String SYMMETRIC_KEY_TYPE = "AES";
