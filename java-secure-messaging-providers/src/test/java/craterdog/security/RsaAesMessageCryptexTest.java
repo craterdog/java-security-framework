@@ -10,6 +10,7 @@
 package craterdog.security;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
@@ -19,13 +20,10 @@ import java.io.InputStream;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-
 import javax.crypto.SecretKey;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -166,6 +164,17 @@ public class RsaAesMessageCryptexTest {
                 response, new String(decryptedOutput.toByteArray()));
 
         logger.info("Round trip message encryption test completed.\n");
+    }
+
+    @Test
+    public void testMessageHashing() throws IOException {
+        logger.info("Testing message hashing...");
+
+        String hash1 = cryptex.hashString("This is a string to be hashed.");
+        String hash2 = cryptex.hashString("This is a different string to be hashed.");
+        assertNotEquals(hash1, hash2);
+
+        logger.info("Message hashing test completed.\n");
     }
 
 }
