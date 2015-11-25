@@ -39,7 +39,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     static private final String ASYMMETRIC_KEY_TYPE = "RSA";
     static private final String HASH_ALGORITHM = "SHA256";
     static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = "SHA1with" + ASYMMETRIC_KEY_TYPE;
-    static private final String ASYMMETRIC_ENCRYPTION_ALGORITHM = ASYMMETRIC_KEY_TYPE + "/NONE/OAEPWithSHA256AndMGF1Padding";
+    static private final String ASYMMETRIC_ENCRYPTION_ALGORITHM = ASYMMETRIC_KEY_TYPE + "/ECB/OAEPWithSHA-256AndMGF1Padding";
     static private final String SYMMETRIC_KEY_TYPE = "AES";
     static private final int SYMMETRIC_KEY_SIZE = 128;
     static private final String SYMMETRIC_ENCRYPTION_ALGORITHM = SYMMETRIC_KEY_TYPE + "/CBC/PKCS5Padding";
@@ -100,7 +100,8 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         } catch (GeneralSecurityException e) {
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to sign bytes.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -118,7 +119,8 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         } catch (GeneralSecurityException e) {
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to validate signed bytes.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -135,7 +137,8 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         } catch (GeneralSecurityException e) {
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to generate a shared key.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -152,7 +155,8 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         } catch (GeneralSecurityException e) {
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to encrypt a shared key.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -171,7 +175,8 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         } catch (GeneralSecurityException e) {
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to decrypt a shared key.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -196,7 +201,8 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         } catch (GeneralSecurityException e) {
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to encrypt a stream.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -221,7 +227,8 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         } catch (GeneralSecurityException e) {
             RuntimeException exception =
                     new RuntimeException("An exception occured while trying to decrypt a stream.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -238,7 +245,8 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             return hashString;
         } catch (NoSuchAlgorithmException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to hash a string.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 

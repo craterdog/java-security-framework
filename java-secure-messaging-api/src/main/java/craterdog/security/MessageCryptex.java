@@ -107,7 +107,7 @@ public abstract class MessageCryptex implements MessageEncryption, MessageDecryp
         } catch (IOException e) {
             // should never happen!
             RuntimeException exception = new RuntimeException("An unexpected exception occured while trying to encrypt a string.", e);
-            logger.throwing(exception);
+            logger.error(exception.toString());
             throw exception;
         }
     }
@@ -126,7 +126,7 @@ public abstract class MessageCryptex implements MessageEncryption, MessageDecryp
         } catch (IOException e) {
             // should never happen!
             RuntimeException exception = new RuntimeException("An unexpected exception occured while trying to decrypt a string.", e);
-            logger.throwing(exception);
+            logger.error(exception.toString());
             throw exception;
         }
     }

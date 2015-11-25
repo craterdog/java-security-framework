@@ -116,7 +116,8 @@ public final class RsaCertificateManager extends CertificateManager {
             return keyPair;
         } catch (NoSuchAlgorithmException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new key pair.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -152,7 +153,8 @@ public final class RsaCertificateManager extends CertificateManager {
         } catch (CertIOException | CertificateException | InvalidKeyException | OperatorCreationException |
                 NoSuchProviderException | NoSuchAlgorithmException | SignatureException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new certificate authority.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -186,7 +188,8 @@ public final class RsaCertificateManager extends CertificateManager {
 
         } catch (OperatorCreationException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new certificate signing request.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -223,7 +226,8 @@ public final class RsaCertificateManager extends CertificateManager {
 
         } catch (PEMException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to sign a certificate.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -260,7 +264,8 @@ public final class RsaCertificateManager extends CertificateManager {
         } catch (CertIOException | OperatorCreationException | CertificateException | NoSuchAlgorithmException |
                 InvalidKeyException | NoSuchProviderException | SignatureException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new certificate.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -276,7 +281,8 @@ public final class RsaCertificateManager extends CertificateManager {
             return result;
         } catch (IOException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to encode a public key.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -293,7 +299,8 @@ public final class RsaCertificateManager extends CertificateManager {
             return result;
         } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a public key.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -312,7 +319,8 @@ public final class RsaCertificateManager extends CertificateManager {
             return result;
         } catch (IOException | OperatorCreationException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to encode a private key.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -332,7 +340,8 @@ public final class RsaCertificateManager extends CertificateManager {
         } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException |
                 OperatorCreationException | PKCSException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a private key.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -357,7 +366,8 @@ public final class RsaCertificateManager extends CertificateManager {
             return result;
         } catch (IOException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to encode a certificate signing request.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -380,7 +390,8 @@ public final class RsaCertificateManager extends CertificateManager {
             return result;
         } catch (IOException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a certificate signing request.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -396,7 +407,8 @@ public final class RsaCertificateManager extends CertificateManager {
             return result;
         } catch (IOException | CertificateEncodingException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to encode a certificate.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -413,7 +425,8 @@ public final class RsaCertificateManager extends CertificateManager {
             return result;
         } catch (IOException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a certificate.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 

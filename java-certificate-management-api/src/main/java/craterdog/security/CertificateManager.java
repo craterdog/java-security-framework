@@ -90,7 +90,8 @@ public abstract class CertificateManager {
             keyStore.store(output, password);
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to save a keystore.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
         logger.exit();
     }
@@ -113,7 +114,8 @@ public abstract class CertificateManager {
             return keyStore;
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to retrieve a keystore.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -133,7 +135,8 @@ public abstract class CertificateManager {
             return certificate;
         } catch (KeyStoreException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to retrieve a certificate.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -154,7 +157,8 @@ public abstract class CertificateManager {
             return privateKey;
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to retrieve a private key.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -181,7 +185,8 @@ public abstract class CertificateManager {
             return privateKey;
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             RuntimeException exception = new RuntimeException("Attempted to merge invalid key shards");
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -265,7 +270,8 @@ public abstract class CertificateManager {
             return keyStore;
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to create a new keystore.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -344,7 +350,8 @@ public abstract class CertificateManager {
             return encodedKeyStore;
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to encode a keystore.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
@@ -366,7 +373,8 @@ public abstract class CertificateManager {
             return keyStore;
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a keystore.", e);
-            throw logger.throwing(exception);
+            logger.error(exception.toString());
+            throw exception;
         }
     }
 
