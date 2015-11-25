@@ -166,6 +166,13 @@ public class RsaAesMessageCryptexTest {
         logger.info("Round trip message encryption test completed.\n");
     }
 
+
+    /**
+     * This test method compares the hash values of two different strings and makes sure that
+     * they are different.
+     *
+     * @throws IOException
+     */
     @Test
     public void testMessageHashing() throws IOException {
         logger.info("Testing message hashing...");
