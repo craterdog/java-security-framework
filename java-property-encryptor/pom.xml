@@ -30,7 +30,7 @@
 
     <groupId>com.craterdog.java-security-framework</groupId>
     <artifactId>java-property-encryptor</artifactId>
-    <version>3.17</version>
+    <version>3.18-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <licenses>
@@ -57,7 +57,7 @@
         <dependency>
             <groupId>com.craterdog.java-security-framework</groupId>
             <artifactId>java-security-utilities</artifactId>
-            <version>3.17</version>
+            <version>3.18-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.craterdog</groupId>
@@ -98,7 +98,7 @@
         <connection>scm:git:git@github.com:craterdog/java-security-framework.git</connection>
         <developerConnection>scm:git:git@github.com:craterdog/java-security-framework.git</developerConnection>
         <url>git@github.com:craterdog/java-security-framework.git</url>
-        <tag>aggregator-3.17</tag>
+        <tag>HEAD</tag>
     </scm>
 
 </project>
