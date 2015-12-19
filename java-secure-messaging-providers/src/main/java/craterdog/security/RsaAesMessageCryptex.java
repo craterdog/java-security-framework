@@ -38,11 +38,16 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     static private final String ENCODING_TYPE = "AES-128-CBC-PKCS7";
     static private final String ASYMMETRIC_KEY_TYPE = "RSA";
     static private final String HASH_ALGORITHM = "SHA-256";
-    static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = "SHA1with" + ASYMMETRIC_KEY_TYPE;
-    static private final String ASYMMETRIC_ENCRYPTION_ALGORITHM = ASYMMETRIC_KEY_TYPE + "/ECB/OAEPWithSHA-256AndMGF1Padding";
+    static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = "SHA256with" + ASYMMETRIC_KEY_TYPE;
+    static private final String ASYMMETRIC_ENCRYPTION_ALGORITHM = ASYMMETRIC_KEY_TYPE + "/NONE/OAEPWithSHA-256AndMGF1Padding";
+    // NOTE: The mode is not used for non-block ciphers so NONE is specified above.  Java will
+    // ignore any specified mode anyway with non-block ciphers.
     static private final String SYMMETRIC_KEY_TYPE = "AES";
     static private final int SYMMETRIC_KEY_SIZE = 128;
     static private final String SYMMETRIC_ENCRYPTION_ALGORITHM = SYMMETRIC_KEY_TYPE + "/CBC/PKCS5Padding";
+    // NOTE: Java's PKCS5Padding implementation is actually PKCS7Padding which is a superset
+    // of PKCS5Padding, but the PKCS7Padding string is not recognized by the default Java cipher
+    // implementation so we have to specify PKCS5Padding above.
 
 
     @Override
