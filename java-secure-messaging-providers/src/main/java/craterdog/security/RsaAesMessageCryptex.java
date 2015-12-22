@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -35,13 +37,9 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public final class RsaAesMessageCryptex extends MessageCryptex {
 
-    static private final String ENCODING_TYPE = "AES-128-CBC-PKCS7";
-    static private final String ASYMMETRIC_KEY_TYPE = "RSA";
     static private final String HASH_ALGORITHM = "SHA-256";
-    static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = "SHA256with" + ASYMMETRIC_KEY_TYPE;
-    static private final String ASYMMETRIC_ENCRYPTION_ALGORITHM = ASYMMETRIC_KEY_TYPE + "/NONE/OAEPWithSHA-256AndMGF1Padding";
-    // NOTE: The mode is not used for non-block ciphers so NONE is specified above.  Java will
-    // ignore any specified mode anyway with non-block ciphers.
+
+    static private final String ENCODING_TYPE = "AES-128-CBC-PKCS7";
     static private final String SYMMETRIC_KEY_TYPE = "AES";
     static private final int SYMMETRIC_KEY_SIZE = 128;
     static private final String SYMMETRIC_ENCRYPTION_ALGORITHM = SYMMETRIC_KEY_TYPE + "/CBC/PKCS5Padding";
@@ -49,34 +47,42 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     // of PKCS5Padding, but the PKCS7Padding string is not recognized by the default Java cipher
     // implementation so we have to specify PKCS5Padding above.
 
+    static private final String ASYMMETRIC_KEY_TYPE = "RSA";
+    static private final int ASYMMETRIC_KEY_SIZE = 2048;
+    static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = "SHA256with" + ASYMMETRIC_KEY_TYPE;
+    static private final String ASYMMETRIC_ENCRYPTION_ALGORITHM = ASYMMETRIC_KEY_TYPE + "/ECB/OAEPWithSHA-256AndMGF1Padding";
+    // NOTE: The mode is not used for non-block ciphers so the ECB specified above is ignored.
+    // Unfortunately, Java does not support a mode value of NONE even though that would be more
+    // accurately named.
+
+
+    @Override
+    public String getHashAlgorithm() {
+        return HASH_ALGORITHM;
+    }
+
+
+    @Override
+    public String hashString(String string) {
+        try {
+            logger.entry();
+            byte[] bytes = (string).getBytes();
+            MessageDigest hasher = MessageDigest.getInstance(HASH_ALGORITHM);
+            byte[] hash = hasher.digest(bytes);
+            String hashString = Base64Utils.encode(hash);
+            logger.exit();
+            return hashString;
+        } catch (NoSuchAlgorithmException e) {
+            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to hash a string.", e);
+            logger.error(exception.toString());
+            throw exception;
+        }
+    }
+
 
     @Override
     public String getEncodingType() {
         return ENCODING_TYPE;
-    }
-
-
-    @Override
-    public String getAsymmetricSignatureAlgorithm() {
-        return ASYMMETRIC_SIGNATURE_ALGORITHM;
-    }
-
-
-    @Override
-    public String getAsymmetricEncryptionAlgorithm() {
-        return ASYMMETRIC_ENCRYPTION_ALGORITHM;
-    }
-
-
-    @Override
-    public String getSymmetricEncryptionAlgorithm() {
-        return SYMMETRIC_ENCRYPTION_ALGORITHM;
-    }
-
-
-    @Override
-    public int getSymmetricKeySize() {
-        return SYMMETRIC_KEY_SIZE;
     }
 
 
@@ -87,46 +93,8 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
-    public String getHashAlgorithm() {
-        return HASH_ALGORITHM;
-    }
-
-
-    @Override
-    public byte[] signBytes(PrivateKey privateKey, byte[] bytes) {
-        try {
-            logger.entry();
-            Signature signer = Signature.getInstance(ASYMMETRIC_SIGNATURE_ALGORITHM);
-            signer.initSign(privateKey);
-            signer.update(bytes);
-            byte[] signature = signer.sign();
-            logger.exit();
-            return signature;
-        } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to sign bytes.", e);
-            logger.error(exception.toString());
-            throw exception;
-        }
-    }
-
-
-    @Override
-    public boolean bytesAreValid(PublicKey certificate, byte[] bytes, byte[] signature) {
-        try {
-            logger.entry();
-            Signature signer = Signature.getInstance(ASYMMETRIC_SIGNATURE_ALGORITHM);
-            signer.initVerify(certificate);
-            signer.update(bytes);
-            boolean isValid = signer.verify(signature);
-            logger.exit();
-            return isValid;
-        } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to validate signed bytes.", e);
-            logger.error(exception.toString());
-            throw exception;
-        }
+    public int getSymmetricKeySize() {
+        return SYMMETRIC_KEY_SIZE;
     }
 
 
@@ -149,40 +117,8 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
-    public byte[] encryptSharedKey(PublicKey publicKey, SecretKey sharedKey) {
-        try {
-            logger.entry();
-            Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            byte[] encryptedKey = cipher.doFinal(sharedKey.getEncoded());
-            logger.exit();
-            return encryptedKey;
-        } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to encrypt a shared key.", e);
-            logger.error(exception.toString());
-            throw exception;
-        }
-    }
-
-
-    @Override
-    public SecretKey decryptSharedKey(PrivateKey privateKey, byte[] encryptedKey) {
-        try {
-            logger.entry();
-            byte[] decryptedKey;
-            Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            decryptedKey = cipher.doFinal(encryptedKey);
-            SecretKey sharedKey = new SecretKeySpec(decryptedKey, SYMMETRIC_KEY_TYPE);
-            logger.exit();
-            return sharedKey;
-        } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to decrypt a shared key.", e);
-            logger.error(exception.toString());
-            throw exception;
-        }
+    public String getSymmetricEncryptionAlgorithm() {
+        return SYMMETRIC_ENCRYPTION_ALGORITHM;
     }
 
 
@@ -239,17 +175,116 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
-    public String hashString(String string) {
+    public String getAsymmetricKeyType() {
+        return ASYMMETRIC_KEY_TYPE;
+    }
+
+
+    @Override
+    public int getAsymmetricKeySize() {
+        return ASYMMETRIC_KEY_SIZE;
+    }
+
+
+    @Override
+    public KeyPair generateKeyPair() {
         try {
             logger.entry();
-            byte[] bytes = (string).getBytes();
-            MessageDigest hasher = MessageDigest.getInstance(HASH_ALGORITHM);
-            byte[] hash = hasher.digest(bytes);
-            String hashString = Base64Utils.encode(hash);
+            KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance(ASYMMETRIC_KEY_TYPE);
+            keyGenerator.initialize(ASYMMETRIC_KEY_SIZE, RandomUtils.generator);
+            KeyPair keyPair = keyGenerator.generateKeyPair();
             logger.exit();
-            return hashString;
+            return keyPair;
         } catch (NoSuchAlgorithmException e) {
-            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to hash a string.", e);
+            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new key pair.", e);
+            logger.error(exception.toString());
+            throw exception;
+        }
+    }
+
+
+    @Override
+    public String getAsymmetricSignatureAlgorithm() {
+        return ASYMMETRIC_SIGNATURE_ALGORITHM;
+    }
+
+
+    @Override
+    public byte[] signBytes(PrivateKey privateKey, byte[] bytes) {
+        try {
+            logger.entry();
+            Signature signer = Signature.getInstance(ASYMMETRIC_SIGNATURE_ALGORITHM);
+            signer.initSign(privateKey);
+            signer.update(bytes);
+            byte[] signature = signer.sign();
+            logger.exit();
+            return signature;
+        } catch (GeneralSecurityException e) {
+            RuntimeException exception =
+                    new RuntimeException("An exception occured while trying to sign bytes.", e);
+            logger.error(exception.toString());
+            throw exception;
+        }
+    }
+
+
+    @Override
+    public boolean bytesAreValid(PublicKey certificate, byte[] bytes, byte[] signature) {
+        try {
+            logger.entry();
+            Signature signer = Signature.getInstance(ASYMMETRIC_SIGNATURE_ALGORITHM);
+            signer.initVerify(certificate);
+            signer.update(bytes);
+            boolean isValid = signer.verify(signature);
+            logger.exit();
+            return isValid;
+        } catch (GeneralSecurityException e) {
+            RuntimeException exception =
+                    new RuntimeException("An exception occured while trying to validate signed bytes.", e);
+            logger.error(exception.toString());
+            throw exception;
+        }
+    }
+
+
+    @Override
+    public String getAsymmetricEncryptionAlgorithm() {
+        return ASYMMETRIC_ENCRYPTION_ALGORITHM;
+    }
+
+
+    @Override
+    public byte[] encryptSharedKey(PublicKey publicKey, SecretKey sharedKey) {
+        try {
+            logger.entry();
+            Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            byte[] encryptedKey = cipher.doFinal(sharedKey.getEncoded());
+            logger.exit();
+            return encryptedKey;
+        } catch (GeneralSecurityException e) {
+            RuntimeException exception =
+                    new RuntimeException("An exception occured while trying to encrypt a shared key.", e);
+            logger.error(exception.toString());
+            throw exception;
+        }
+    }
+
+
+    @Override
+    public SecretKey decryptSharedKey(PrivateKey privateKey, byte[] encryptedKey) {
+        try {
+            logger.entry();
+            byte[] decryptedKey;
+            Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            decryptedKey = cipher.doFinal(encryptedKey);
+            SecretKey sharedKey = new SecretKeySpec(decryptedKey, SYMMETRIC_KEY_TYPE);
+            logger.exit();
+            return sharedKey;
+        } catch (GeneralSecurityException e) {
+            RuntimeException exception =
+                    new RuntimeException("An exception occured while trying to decrypt a shared key.", e);
             logger.error(exception.toString());
             throw exception;
         }

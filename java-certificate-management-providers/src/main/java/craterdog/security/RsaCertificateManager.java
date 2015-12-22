@@ -9,7 +9,6 @@
  ************************************************************************/
 package craterdog.security;
 
-import craterdog.utils.RandomUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -64,60 +63,14 @@ import org.bouncycastle.util.io.pem.PemWriter;
 public final class RsaCertificateManager extends CertificateManager {
 
     static private final String ASYMMETRIC_KEY_TYPE = "RSA";
-    static private final int ASYMMETRIC_KEY_SIZE = 2048;
-    static private final String HASH_ALGORITHM = "SHA256";
-    static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = HASH_ALGORITHM + "with" + ASYMMETRIC_KEY_TYPE;
+    static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = "SHA256with" + ASYMMETRIC_KEY_TYPE;
     static private final String PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
 
 
-    /**
-     * This default constructor sets up the security implementation provider.
-     */
-    public RsaCertificateManager() {
-        logger.entry();
-        logger.debug("Adding the security implementation provider...");
-        Security.addProvider(new BouncyCastleProvider());
-        logger.exit();
-    }
-
-
-    @Override
-    public String getAsymmetricKeyType() {
-        return ASYMMETRIC_KEY_TYPE;
-    }
-
-
-    @Override
-    public int getAsymmetricalKeySize() {
-        return ASYMMETRIC_KEY_SIZE;
-    }
-
-
-    @Override
-    public String getHashAlgorithm() {
-        return HASH_ALGORITHM;
-    }
-
-
-    @Override
-    public String getAsymmetricSignatureAlgorithm() {
-        return ASYMMETRIC_SIGNATURE_ALGORITHM;
-    }
-
-
-    @Override
-    public KeyPair generateKeyPair() {
-        try {
-            logger.entry();
-            KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance(ASYMMETRIC_KEY_TYPE);
-            keyGenerator.initialize(ASYMMETRIC_KEY_SIZE, RandomUtils.generator);
-            KeyPair keyPair = keyGenerator.generateKeyPair();
-            logger.exit();
-            return keyPair;
-        } catch (NoSuchAlgorithmException e) {
-            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new key pair.", e);
-            logger.error(exception.toString());
-            throw exception;
+    static {
+        if (Security.getProvider(PROVIDER_NAME) == null) {
+            logger.debug("Adding security provider: {}", PROVIDER_NAME);
+            Security.addProvider(new BouncyCastleProvider());
         }
     }
 
@@ -140,8 +93,7 @@ public final class RsaCertificateManager extends CertificateManager {
             builder.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey));
             builder.addExtension(Extension.basicConstraints, true, new BasicConstraints(0));  // adds CA:TRUE extension
             builder.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign | KeyUsage.cRLSign));
-            ContentSigner signer = new JcaContentSignerBuilder(ASYMMETRIC_SIGNATURE_ALGORITHM)
-                    .setProvider(PROVIDER_NAME).build(privateKey);
+            ContentSigner signer = new JcaContentSignerBuilder(ASYMMETRIC_SIGNATURE_ALGORITHM).build(privateKey);
             X509Certificate result = new JcaX509CertificateConverter().setProvider(PROVIDER_NAME)
                     .getCertificate(builder.build(signer));
             result.checkValidity(new Date());
@@ -251,8 +203,7 @@ public final class RsaCertificateManager extends CertificateManager {
             builder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
             builder.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
 
-            ContentSigner signer = new JcaContentSignerBuilder(ASYMMETRIC_SIGNATURE_ALGORITHM)
-                    .setProvider(PROVIDER_NAME).build(caPrivateKey);
+            ContentSigner signer = new JcaContentSignerBuilder(ASYMMETRIC_SIGNATURE_ALGORITHM).build(caPrivateKey);
             X509Certificate result = new JcaX509CertificateConverter().setProvider(PROVIDER_NAME)
                     .getCertificate(builder.build(signer));
             result.checkValidity(new Date());
@@ -291,13 +242,13 @@ public final class RsaCertificateManager extends CertificateManager {
     public PublicKey decodePublicKey(String pem) {
         logger.entry();
         try (StringReader sreader = new StringReader(pem); PemReader preader = new PemReader(sreader)) {
-            KeyFactory factory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE, PROVIDER_NAME);
+            KeyFactory factory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
             byte[] keyBytes = preader.readPemObject().getContent();
             X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
             PublicKey result = factory.generatePublic(keySpec);
             logger.exit();
             return result;
-        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a public key.", e);
             logger.error(exception.toString());
             throw exception;
@@ -333,11 +284,11 @@ public final class RsaCertificateManager extends CertificateManager {
             PKCS8EncryptedPrivateKeyInfo pinfo = (PKCS8EncryptedPrivateKeyInfo) pemParser.readObject();
             InputDecryptorProvider provider = new JceOpenSSLPKCS8DecryptorProviderBuilder().build(password);
             byte[] keyBytes = pinfo.decryptPrivateKeyInfo(provider).getEncoded();
-            KeyFactory factory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE, PROVIDER_NAME);
+            KeyFactory factory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
             PrivateKey result = factory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
             logger.exit();
             return result;
-        } catch (IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException |
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException |
                 OperatorCreationException | PKCSException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a private key.", e);
             logger.error(exception.toString());

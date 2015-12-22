@@ -12,6 +12,7 @@ package craterdog.security;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
@@ -27,11 +28,12 @@ import javax.crypto.*;
 public interface MessageEncryption {
 
     /**
-     * This method returns the encoding type supported by this cryptex.
+     * This method encodes a byte array into a base 64 string.
      *
-     * @return The HTTP encoding type.
+     * @param bytes The byte array to be encoded.
+     * @return The base 64 encoded string for those bytes.
      */
-    public String getEncodingType();
+    public String encodeBytes(byte[] bytes);
 
     /**
      * This method returns the hash algorithm.
@@ -40,27 +42,20 @@ public interface MessageEncryption {
      */
     public abstract String getHashAlgorithm();
 
+    /**
+     * This method returns a base 64 encoded SHA256 one-way hash of the specified string.
+     *
+     * @param string The string to be hashed.
+     * @return A base 64 encoded one-way hash of the string.
+     */
+    public abstract String hashString(String string);
 
     /**
-     * This method returns the asymmetric signature algorithm used by this cryptex.
+     * This method returns the encoding type supported by this cryptex.
      *
-     * @return The name of the algorithm.
+     * @return The HTTP encoding type.
      */
-    public String getAsymmetricSignatureAlgorithm();
-
-    /**
-     * This method returns the asymmetric encryption algorithm used by this cryptex.
-     *
-     * @return The name of the algorithm.
-     */
-    public String getAsymmetricEncryptionAlgorithm();
-
-    /**
-     * This method returns the symmetric encryption algorithm used by this cryptex.
-     *
-     * @return The name of the algorithm.
-     */
-    public String getSymmetricEncryptionAlgorithm();
+    public String getEncodingType();
 
     /**
      * This method returns the symmetric key type used by this cryptex.
@@ -77,23 +72,6 @@ public interface MessageEncryption {
     public int getSymmetricKeySize();
 
     /**
-     * This method encodes a byte array into a base 64 string.
-     *
-     * @param bytes The byte array to be encoded.
-     * @return The base 64 encoded string for those bytes.
-     */
-    public String encodeBytes(byte[] bytes);
-
-    /**
-     * This method signs a byte array.
-     *
-     * @param privateKey The private key used for signing.
-     * @param bytes The byte array to be signed.
-     * @return The resulting signature.
-     */
-    public byte[] signBytes(PrivateKey privateKey, byte[] bytes);
-
-    /**
      * This method generates a shared (secret) key to be used for encrypting
      * large amounts of data.
      *
@@ -102,16 +80,11 @@ public interface MessageEncryption {
     public SecretKey generateSharedKey();
 
     /**
-     * This method encrypts a shared key using the public certificate of the destination for a data stream that will
-     * be encrypted using the shared key.  Shared key-based encryption is much faster than public/private key pair-based
-     * encryption.  But the shared key must be passed to the destination for this to work so the shared key is first
-     * encrypted using public/private key encryption.
+     * This method returns the symmetric encryption algorithm used by this cryptex.
      *
-     * @param certificate The public certificate of the destination.
-     * @param sharedKey The shared key to be encrypted.
-     * @return The encrypted shared key.
+     * @return The name of the algorithm.
      */
-    public byte[] encryptSharedKey(PublicKey certificate, SecretKey sharedKey);
+    public String getSymmetricEncryptionAlgorithm();
 
     /**
      * This method encrypts a string using a shared key.
@@ -143,11 +116,59 @@ public interface MessageEncryption {
     public CipherOutputStream encryptionOutputStream(SecretKey sharedKey, OutputStream output) throws IOException;
 
     /**
-     * This method returns a base 64 encoded SHA256 one-way hash of the specified string.
+     * This method returns the asymmetric key type string.
      *
-     * @param string The string to be hashed.
-     * @return A base 64 encoded one-way hash of the string.
+     * @return The asymmetric key type string.
      */
-    public abstract String hashString(String string);
+    public abstract String getAsymmetricKeyType();
+
+    /**
+     * This method returns the asymmetric key size.
+     *
+     * @return The asymmetric key size.
+     */
+    public abstract int getAsymmetricKeySize();
+
+    /**
+     * This method generates a new public/private key pair.
+     *
+     * @return The new key pair.
+     */
+    public abstract KeyPair generateKeyPair();
+
+    /**
+     * This method returns the asymmetric signature algorithm used by this cryptex.
+     *
+     * @return The name of the algorithm.
+     */
+    public String getAsymmetricSignatureAlgorithm();
+
+    /**
+     * This method signs a byte array.
+     *
+     * @param privateKey The private key used for signing.
+     * @param bytes The byte array to be signed.
+     * @return The resulting signature.
+     */
+    public byte[] signBytes(PrivateKey privateKey, byte[] bytes);
+
+    /**
+     * This method returns the asymmetric encryption algorithm used by this cryptex.
+     *
+     * @return The name of the algorithm.
+     */
+    public String getAsymmetricEncryptionAlgorithm();
+
+    /**
+     * This method encrypts a shared key using the public certificate of the destination for a data stream that will
+     * be encrypted using the shared key.  Shared key-based encryption is much faster than public/private key pair-based
+     * encryption.  But the shared key must be passed to the destination for this to work so the shared key is first
+     * encrypted using public/private key encryption.
+     *
+     * @param certificate The public certificate of the destination.
+     * @param sharedKey The shared key to be encrypted.
+     * @return The encrypted shared key.
+     */
+    public byte[] encryptSharedKey(PublicKey certificate, SecretKey sharedKey);
 
 }

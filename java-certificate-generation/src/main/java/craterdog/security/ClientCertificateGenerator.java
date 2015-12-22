@@ -74,13 +74,14 @@ public class ClientCertificateGenerator {
             int size = new Tag(16).toString().length();
             char[] caPassword = new char[size];
             pwReader.read(caPassword);
+            MessageCryptex cryptex = new RsaAesMessageCryptex();
             RsaCertificateManager manager = new RsaCertificateManager();
             KeyStore caKeyStore = manager.retrieveKeyStore(caInput, caPassword);
             PrivateKey caPrivateKey = manager.retrievePrivateKey(caKeyStore, CA_ALIAS, caPassword);
             X509Certificate caCertificate = manager.retrieveCertificate(caKeyStore, CA_ALIAS);
 
             logger.info("Generating a new key pair for the client certificate...");
-            KeyPair clientKeyPair = manager.generateKeyPair();
+            KeyPair clientKeyPair = cryptex.generateKeyPair();
             PublicKey clientPublicKey = clientKeyPair.getPublic();
             PrivateKey clientPrivateKey = clientKeyPair.getPrivate();
 

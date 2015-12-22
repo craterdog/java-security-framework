@@ -96,11 +96,10 @@ public class RsaAesMessageCryptexTest {
         logger.info("Testing round trip message encryption...");
 
         logger.info("  Generating the public/private key pairs...");
-        RsaCertificateManager manager = new RsaCertificateManager();
-        KeyPair senderPair = manager.generateKeyPair();
+        KeyPair senderPair = cryptex.generateKeyPair();
         PrivateKey senderPrivateKey = senderPair.getPrivate();
         PublicKey senderPublicKey = senderPair.getPublic();
-        KeyPair receiverPair = manager.generateKeyPair();
+        KeyPair receiverPair = cryptex.generateKeyPair();
         PrivateKey receiverPrivateKey = receiverPair.getPrivate();
         PublicKey receiverPublicKey = receiverPair.getPublic();
 

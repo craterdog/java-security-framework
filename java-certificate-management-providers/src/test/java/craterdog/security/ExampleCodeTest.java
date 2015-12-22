@@ -61,10 +61,11 @@ public class ExampleCodeTest {
     @Test
     public void testExampleCode() throws Exception {
         logger.info("Testing the example code...");
+        MessageCryptex cryptex = new RsaAesMessageCryptex();
         RsaCertificateManager manager = new RsaCertificateManager();
 
         logger.info("  Generating a new key pair for the CA.");
-        KeyPair caKeyPair = manager.generateKeyPair();
+        KeyPair caKeyPair = cryptex.generateKeyPair();
         PublicKey caPublicKey = caKeyPair.getPublic();
         PrivateKey caPrivateKey = caKeyPair.getPrivate();
 
@@ -81,7 +82,7 @@ public class ExampleCodeTest {
         KeyStore caKeyStore = manager.createPkcs12KeyStore(caKeyName, caPassword, caPrivateKey, caCertificate);
 
         logger.info("  Generating a new key pair for the client.");
-        KeyPair clientKeyPair = manager.generateKeyPair();
+        KeyPair clientKeyPair = cryptex.generateKeyPair();
         PublicKey clientPublicKey = clientKeyPair.getPublic();
         PrivateKey clientPrivateKey = clientKeyPair.getPrivate();
 
@@ -100,7 +101,7 @@ public class ExampleCodeTest {
         KeyStore clientKeyStore = manager.createPkcs12KeyStore(clientKeyName, clientPassword, clientPrivateKey, certificates);
 
         logger.info("  Creating a new certificate signing request...");
-        KeyPair keyPair = manager.generateKeyPair();
+        KeyPair keyPair = cryptex.generateKeyPair();
         PrivateKey privateKey = keyPair.getPrivate();
         PublicKey publicKey = keyPair.getPublic();
         String subject = "CN=craterdog.com, O=Crater Dog Technologies™, OU=Engineering, ST=Colorado, C=USA";

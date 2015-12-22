@@ -67,16 +67,13 @@ public class RsaCertificateManagerTest {
     @Test
     public void testRoundTrips() throws Exception {
         logger.info("Testing RSA certificate manager round trip...");
+        MessageCryptex cryptex = new RsaAesMessageCryptex();
         RsaCertificateManager manager = new RsaCertificateManager();
 
         logger.info("  Generating a new key pair for the CA.");
-        KeyPair caKeyPair = manager.generateKeyPair();
+        KeyPair caKeyPair = cryptex.generateKeyPair();
         PublicKey caPublicKey = caKeyPair.getPublic();
         PrivateKey caPrivateKey = caKeyPair.getPrivate();
-
-        logger.info("  Splitting and merging the private key.");
-        String[] horcruxes = manager.splitPrivateKey(caPrivateKey);
-        caPrivateKey = manager.mergePrivateKey(horcruxes);
 
         logger.info("  Encoding and decoding the public key.");
         String pem = manager.encodePublicKey(caPublicKey);
@@ -118,7 +115,7 @@ public class RsaCertificateManagerTest {
         caPrivateKey = manager.retrievePrivateKey(caKeyStore, caKeyName, caPassword);
 
         logger.info("  Generating a new key pair for the client.");
-        KeyPair clientKeyPair = manager.generateKeyPair();
+        KeyPair clientKeyPair = cryptex.generateKeyPair();
         PublicKey clientPublicKey = clientKeyPair.getPublic();
         PrivateKey clientPrivateKey = clientKeyPair.getPrivate();
 
@@ -151,7 +148,7 @@ public class RsaCertificateManagerTest {
         assertEquals("Client Certificate", clientCertificate2, clientCertificate3);
 
         logger.info("  Creating a new certificate signing request...");
-        KeyPair keyPair = manager.generateKeyPair();
+        KeyPair keyPair = cryptex.generateKeyPair();
         privateKey = keyPair.getPrivate();
         publicKey = keyPair.getPublic();
         String subject = "CN=craterdog.com, O=Crater Dog Technologies™, OU=Engineering, ST=Colorado, C=USA";

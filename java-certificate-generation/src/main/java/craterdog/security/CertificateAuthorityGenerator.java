@@ -58,8 +58,9 @@ public class CertificateAuthorityGenerator {
         try (FileOutputStream output = new FileOutputStream(filePrefix + ".p12");
                 FileWriter pwFile = new FileWriter(filePrefix + ".pw")) {
             logger.info("Generating a new key pair for the CA...");
+            MessageCryptex cryptex = new RsaAesMessageCryptex();
             RsaCertificateManager manager = new RsaCertificateManager();
-            KeyPair caKeyPair = manager.generateKeyPair();
+            KeyPair caKeyPair = cryptex.generateKeyPair();
             PublicKey caPublicKey = caKeyPair.getPublic();
             PrivateKey caPrivateKey = caKeyPair.getPrivate();
 

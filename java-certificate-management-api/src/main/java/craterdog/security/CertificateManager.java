@@ -10,14 +10,11 @@
 package craterdog.security;
 
 import craterdog.utils.Base64Utils;
-import craterdog.utils.RandomUtils;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.ext.XLogger;
@@ -35,46 +32,6 @@ public abstract class CertificateManager {
     static final XLogger logger = XLoggerFactory.getXLogger(CertificateManager.class);
 
     static private final String KEY_STORE_FORMAT = "PKCS12";
-
-    /**
-     * This method returns the asymmetric key type string.
-     *
-     * @return The asymmetric key type string.
-     */
-    public abstract String getAsymmetricKeyType();
-
-
-    /**
-     * This method returns the asymmetric key size.
-     *
-     * @return The asymmetric key size.
-     */
-    public abstract int getAsymmetricalKeySize();
-
-
-    /**
-     * This method returns the hash algorithm.
-     *
-     * @return The hash algorithm.
-     */
-    public abstract String getHashAlgorithm();
-
-
-    /**
-     * This method returns the asymmetric signature algorithm.
-     *
-     * @return The asymmetric signature algorithm.
-     */
-    public abstract String getAsymmetricSignatureAlgorithm();
-
-
-    /**
-     * This method generates a new public/private key pair.
-     *
-     * @return The new key pair.
-     */
-    public abstract KeyPair generateKeyPair();
-
 
     /**
      * This method saves a PKCS12 format key store out to an output stream.
@@ -160,44 +117,6 @@ public abstract class CertificateManager {
             logger.error(exception.toString());
             throw exception;
         }
-    }
-
-
-    public final String[] splitPrivateKey(PrivateKey key) {
-        String[] result = new String[2];
-        byte[] keyBytes = key.getEncoded();
-        int numberOfBytes = keyBytes.length;
-        byte[] randomBytes = RandomUtils.generateRandomBytes(numberOfBytes);
-        byte[] xorBytes = xorByteArrays(keyBytes, randomBytes);
-        result[0] = Base64Utils.encode(randomBytes);
-        result[1] = Base64Utils.encode(xorBytes);
-        return result;
-    }
-
-
-    public final PrivateKey mergePrivateKey(String[] encodedByteArrays) {
-        try {
-            byte[] randomBytes = Base64Utils.decode(encodedByteArrays[0]);
-            byte[] xorBytes = Base64Utils.decode(encodedByteArrays[1]);
-            byte[] keyBytes = xorByteArrays(randomBytes, xorBytes);
-            KeyFactory factory = KeyFactory.getInstance(getAsymmetricKeyType());
-            PrivateKey privateKey = factory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
-            return privateKey;
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            RuntimeException exception = new RuntimeException("Attempted to merge invalid key shards");
-            logger.error(exception.toString());
-            throw exception;
-        }
-    }
-
-
-    private byte[] xorByteArrays(byte[] firstArray, byte[] secondArray) {
-        int numberOfBytes = firstArray.length;
-        byte[] xorBytes = new byte[numberOfBytes];
-        for (int i = 0; i < numberOfBytes; i++) {
-            xorBytes[i] =  (byte) (0xFF & (firstArray[i] ^ secondArray[i]));
-        }
-        return xorBytes;
     }
 
 

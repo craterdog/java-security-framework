@@ -35,27 +35,6 @@ public interface MessageDecryption {
     public byte[] decodeString(String base64String);
 
     /**
-     * This method checks to see if the signature for a signed byte array is valid.
-     *
-     * @param certificate The certificate containing the matching public key for the private key that signed the bytes.
-     * @param bytes The byte array to be signed.
-     * @param signature The signature to be validated.
-     * @return Whether or not the signature matches the byte array.
-     */
-    public boolean bytesAreValid(PublicKey certificate, byte[] bytes, byte[] signature);
-
-    /**
-     * This method decrypts a shared key using the private key that is paired with the public certificate that was
-     * used to encrypt it at the source.  The public certificate and private key belong to the destination of the
-     * communication.
-     *
-     * @param privateKey The private key of the destination.
-     * @param encryptedKey The encrypted shared key.
-     * @return The decrypted shared key.
-     */
-    public SecretKey decryptSharedKey(PrivateKey privateKey, byte[] encryptedKey);
-
-    /**
      * This method decrypts a string using a shared key.
      *
      * @param sharedKey The shared key used for the encryption.
@@ -83,5 +62,27 @@ public interface MessageDecryption {
      * @throws java.io.IOException Unable to create a decryption input stream.
      */
     public CipherInputStream decryptionInputStream(SecretKey sharedKey, InputStream input) throws IOException;
+
+
+    /**
+     * This method checks to see if the signature for a signed byte array is valid.
+     *
+     * @param certificate The certificate containing the matching public key for the private key that signed the bytes.
+     * @param bytes The byte array to be signed.
+     * @param signature The signature to be validated.
+     * @return Whether or not the signature matches the byte array.
+     */
+    public boolean bytesAreValid(PublicKey certificate, byte[] bytes, byte[] signature);
+
+    /**
+     * This method decrypts a shared key using the private key that is paired with the public certificate that was
+     * used to encrypt it at the source.  The public certificate and private key belong to the destination of the
+     * communication.
+     *
+     * @param privateKey The private key of the destination.
+     * @param encryptedKey The encrypted shared key.
+     * @return The decrypted shared key.
+     */
+    public SecretKey decryptSharedKey(PrivateKey privateKey, byte[] encryptedKey);
 
 }
