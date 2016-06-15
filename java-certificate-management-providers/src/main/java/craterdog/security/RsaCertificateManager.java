@@ -19,12 +19,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 import javax.security.auth.x500.X500Principal;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyUsage;
@@ -35,21 +31,12 @@ import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMException;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.PKCS8Generator;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.bouncycastle.openssl.jcajce.JcaPKCS8Generator;
-import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
 import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.InputDecryptorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
-import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
-import org.bouncycastle.pkcs.jcajce.JcePKCSPBEOutputEncryptorBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
@@ -62,8 +49,7 @@ import org.bouncycastle.util.io.pem.PemWriter;
  */
 public final class RsaCertificateManager extends CertificateManager {
 
-    static private final String ASYMMETRIC_KEY_TYPE = "RSA";
-    static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = "SHA256with" + ASYMMETRIC_KEY_TYPE;
+    static private final String ASYMMETRIC_SIGNATURE_ALGORITHM = "SHA256withRSA";
     static private final String PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
 
 
@@ -215,82 +201,6 @@ public final class RsaCertificateManager extends CertificateManager {
         } catch (CertIOException | OperatorCreationException | CertificateException | NoSuchAlgorithmException |
                 InvalidKeyException | NoSuchProviderException | SignatureException e) {
             RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new certificate.", e);
-            logger.error(exception.toString());
-            throw exception;
-        }
-    }
-
-
-    @Override
-    public String encodePublicKey(PublicKey key) {
-        logger.entry();
-        try (StringWriter swriter = new StringWriter(); PemWriter pwriter = new PemWriter(swriter)) {
-            pwriter.writeObject(new PemObject("PUBLIC KEY", key.getEncoded()));
-            pwriter.flush();
-            String result = swriter.toString();
-            logger.exit();
-            return result;
-        } catch (IOException e) {
-            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to encode a public key.", e);
-            logger.error(exception.toString());
-            throw exception;
-        }
-    }
-
-
-    @Override
-    public PublicKey decodePublicKey(String pem) {
-        logger.entry();
-        try (StringReader sreader = new StringReader(pem); PemReader preader = new PemReader(sreader)) {
-            KeyFactory factory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
-            byte[] keyBytes = preader.readPemObject().getContent();
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-            PublicKey result = factory.generatePublic(keySpec);
-            logger.exit();
-            return result;
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a public key.", e);
-            logger.error(exception.toString());
-            throw exception;
-        }
-    }
-
-
-    @Override
-    public String encodePrivateKey(PrivateKey key, char[] password) {
-        logger.entry();
-        try (StringWriter swriter = new StringWriter(); PemWriter pwriter = new PemWriter(swriter)) {
-            OutputEncryptor encryptor = new JcePKCSPBEOutputEncryptorBuilder(NISTObjectIdentifiers.id_aes128_CBC)
-                    .setProvider(PROVIDER_NAME).build(password);
-            PKCS8Generator generator = new JcaPKCS8Generator(key, encryptor);
-            pwriter.writeObject(generator);
-            pwriter.flush();
-            String result = swriter.toString();
-            logger.exit();
-            return result;
-        } catch (IOException | OperatorCreationException e) {
-            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to encode a private key.", e);
-            logger.error(exception.toString());
-            throw exception;
-        }
-    }
-
-
-    @Override
-    public PrivateKey decodePrivateKey(String pem, char[] password) {
-        logger.entry();
-        try (StringReader sreader = new StringReader(pem); PemReader preader = new PemReader(sreader)) {
-            PEMParser pemParser = new PEMParser(preader);
-            PKCS8EncryptedPrivateKeyInfo pinfo = (PKCS8EncryptedPrivateKeyInfo) pemParser.readObject();
-            InputDecryptorProvider provider = new JceOpenSSLPKCS8DecryptorProviderBuilder().build(password);
-            byte[] keyBytes = pinfo.decryptPrivateKeyInfo(provider).getEncoded();
-            KeyFactory factory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
-            PrivateKey result = factory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
-            logger.exit();
-            return result;
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException |
-                OperatorCreationException | PKCSException e) {
-            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to decode a private key.", e);
             logger.error(exception.toString());
             throw exception;
         }

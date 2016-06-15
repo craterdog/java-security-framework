@@ -103,6 +103,20 @@ public class RsaAesMessageCryptexTest {
         PrivateKey receiverPrivateKey = receiverPair.getPrivate();
         PublicKey receiverPublicKey = receiverPair.getPublic();
 
+        logger.info("  Encoding and decoding the public key.");
+        String pem = cryptex.encodePublicKey(senderPublicKey);
+        PublicKey publicKey = cryptex.decodePublicKey(pem);
+        String pem2 = cryptex.encodePublicKey(publicKey);
+        assertEquals("  The encoded and decoded public keys don't match.", pem, pem2);
+
+        logger.info("  Encoding and decoding the private key with password.");
+        char[] password = "secret".toCharArray();
+        pem = cryptex.encodePrivateKey(senderPrivateKey, password);
+        PrivateKey privateKey = cryptex.decodePrivateKey(pem, password);
+        pem2 = cryptex.encodePrivateKey(privateKey, password);
+        PrivateKey privateKey2 = cryptex.decodePrivateKey(pem2, password);
+        assertEquals("  The encoded and decoded private keys don't match.", privateKey, privateKey2);
+
         logger.info("  Sender generating shared session key...");
         SecretKey sessionKey = cryptex.generateSharedKey();
 

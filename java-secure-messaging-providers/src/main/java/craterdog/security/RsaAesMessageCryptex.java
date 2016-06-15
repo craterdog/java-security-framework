@@ -14,7 +14,9 @@ import craterdog.utils.RandomUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -23,9 +25,18 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.AlgorithmParameterSpec;
-import javax.crypto.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.EncryptedPrivateKeyInfo;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
 
 
 /**
@@ -39,9 +50,15 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
     static private final String HASH_ALGORITHM = "SHA-256";
 
-    static private final String ENCODING_TYPE = "AES-128-CBC-PKCS7";
+    //static private final String PASSWORD_ENCODING_TYPE = "PBKDF2WithHmacSHA1";
+    //static private final String PASSWORD_ENCODING_TYPE = "PBEWithHmacSHA256AndAES_128";
+    static private final String PASSWORD_ENCODING_TYPE = "PBEWithSHA1AndDESede";
+    static private final byte[] PASSWORD_SALT = new byte[20];
+    static private final int PASSWORD_ITERATION_COUNT = 1024;
+
     static private final String SYMMETRIC_KEY_TYPE = "AES";
     static private final int SYMMETRIC_KEY_SIZE = 128;
+    static private final AlgorithmParameterSpec SYMMETRIC_IV_PARAMETER = new IvParameterSpec(new byte[16]);  // all zeros
     static private final String SYMMETRIC_ENCRYPTION_ALGORITHM = SYMMETRIC_KEY_TYPE + "/CBC/PKCS5Padding";
     // NOTE: Java's PKCS5Padding implementation is actually PKCS7Padding which is a superset
     // of PKCS5Padding, but the PKCS7Padding string is not recognized by the default Java cipher
@@ -73,16 +90,17 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.exit();
             return hashString;
         } catch (NoSuchAlgorithmException e) {
-            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to hash a string.", e);
-            logger.error(exception.toString());
+            String message = "An unexpected exception occurred while attempting to hash a string.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
             throw exception;
         }
     }
 
 
     @Override
-    public String getEncodingType() {
-        return ENCODING_TYPE;
+    public String getPasswordEncodingType() {
+        return PASSWORD_ENCODING_TYPE;
     }
 
 
@@ -99,6 +117,12 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
+    public String getSymmetricEncryptionAlgorithm() {
+        return SYMMETRIC_ENCRYPTION_ALGORITHM;
+    }
+
+
+    @Override
     public SecretKey generateSharedKey() {
         try {
             logger.entry();
@@ -108,17 +132,11 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.exit();
             return sharedKey;
         } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to generate a shared key.", e);
-            logger.error(exception.toString());
+            String message = "An exception occured while trying to generate a shared key.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
             throw exception;
         }
-    }
-
-
-    @Override
-    public String getSymmetricEncryptionAlgorithm() {
-        return SYMMETRIC_ENCRYPTION_ALGORITHM;
     }
 
 
@@ -130,9 +148,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
             logger.debug("Creating and initializing the encryption engine...");
             Cipher cipher = Cipher.getInstance(SYMMETRIC_ENCRYPTION_ALGORITHM);
-            byte[] fixedIV = new byte[16];  // all zeros
-            AlgorithmParameterSpec ivSpec = new IvParameterSpec(fixedIV);
-            cipher.init(Cipher.ENCRYPT_MODE, sharedKey, ivSpec);
+            cipher.init(Cipher.ENCRYPT_MODE, sharedKey, SYMMETRIC_IV_PARAMETER);
 
             logger.debug("Creating a special output stream to do the work...");
             CipherOutputStream cipherOutputStream = new CipherOutputStream(output, cipher);
@@ -140,9 +156,9 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.exit();
             return cipherOutputStream;
         } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to encrypt a stream.", e);
-            logger.error(exception.toString());
+            String message = "An exception occured while trying to encrypt a stream.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
             throw exception;
         }
     }
@@ -156,9 +172,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
             logger.debug("Creating and initializing the decryption engine...");
             Cipher cipher = Cipher.getInstance(SYMMETRIC_ENCRYPTION_ALGORITHM);
-            byte[] fixedIV = new byte[16];  // all zeros
-            AlgorithmParameterSpec ivSpec = new IvParameterSpec(fixedIV);
-            cipher.init(Cipher.DECRYPT_MODE, sharedKey, ivSpec);
+            cipher.init(Cipher.DECRYPT_MODE, sharedKey, SYMMETRIC_IV_PARAMETER);
 
             logger.debug("Creating a special input stream to do the work...");
             CipherInputStream cipherInputStream = new CipherInputStream(input, cipher);
@@ -166,9 +180,9 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.exit();
             return cipherInputStream;
         } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to decrypt a stream.", e);
-            logger.error(exception.toString());
+            String message = "An exception occured while trying to decrypt a stream.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
             throw exception;
         }
     }
@@ -187,6 +201,18 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
+    public String getAsymmetricSignatureAlgorithm() {
+        return ASYMMETRIC_SIGNATURE_ALGORITHM;
+    }
+
+
+    @Override
+    public String getAsymmetricEncryptionAlgorithm() {
+        return ASYMMETRIC_ENCRYPTION_ALGORITHM;
+    }
+
+
+    @Override
     public KeyPair generateKeyPair() {
         try {
             logger.entry();
@@ -195,17 +221,131 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             KeyPair keyPair = keyGenerator.generateKeyPair();
             logger.exit();
             return keyPair;
-        } catch (NoSuchAlgorithmException e) {
-            RuntimeException exception = new RuntimeException("An unexpected exception occurred while attempting to generate a new key pair.", e);
-            logger.error(exception.toString());
+        } catch (GeneralSecurityException e) {
+            String message = "An unexpected exception occurred while attempting to generate a new key pair.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
             throw exception;
         }
     }
 
 
     @Override
-    public String getAsymmetricSignatureAlgorithm() {
-        return ASYMMETRIC_SIGNATURE_ALGORITHM;
+    public String encodePublicKey(PublicKey key) {
+        logger.entry();
+        try {
+            StringBuilder buffer = new StringBuilder();
+            buffer.append("-----BEGIN PUBLIC KEY-----\n");
+            buffer.append(Base64Utils.encode(key.getEncoded()));
+            buffer.append("\n-----END PUBLIC KEY-----\n");
+            String result = buffer.toString();
+
+            logger.exit();
+            return result;
+
+        } catch (Exception e) {
+            String message = "An unexpected exception occurred while attempting to encode a public key.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
+            throw exception;
+        }
+    }
+
+
+    @Override
+    public PublicKey decodePublicKey(String pem) {
+        logger.entry();
+        try {
+            logger.debug("Unwrapping the PEM encoding...");
+            String base64Encoded = pem
+                    .replace("-----BEGIN PUBLIC KEY-----\n", "")
+                    .replace("\n-----END PUBLIC KEY-----\n", "");
+            byte[] keyBytes = Base64Utils.decode(base64Encoded);
+
+            logger.debug("Decoding the public key...");
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory factory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
+            PublicKey result = factory.generatePublic(keySpec);
+
+            logger.exit();
+            return result;
+
+        } catch (GeneralSecurityException e) {
+            String message = "An unexpected exception occurred while attempting to decode a public key.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
+            throw exception;
+        }
+    }
+
+
+    @Override
+    public String encodePrivateKey(PrivateKey key, char[] password) {
+        logger.entry();
+        try {
+            logger.debug("Transforming the password into a secret key...");
+            SecretKeyFactory passwordFactory = SecretKeyFactory.getInstance(PASSWORD_ENCODING_TYPE);
+            PBEKeySpec passwordSpec = new PBEKeySpec(password);
+            SecretKey passwordKey = passwordFactory.generateSecret(passwordSpec);
+
+            logger.debug("Encrypting the private key using the secret key...");
+            Cipher cipher = Cipher.getInstance(PASSWORD_ENCODING_TYPE);
+            cipher.init(Cipher.ENCRYPT_MODE, passwordKey);
+            byte[] encryptedBytes = cipher.doFinal(key.getEncoded());
+
+            logger.debug("Encoding the encrypted bytes in PKCS8 format...");
+            AlgorithmParameters params = cipher.getParameters();
+	        EncryptedPrivateKeyInfo encryptedKeyInfo = new EncryptedPrivateKeyInfo(params, encryptedBytes) ;
+
+            logger.debug("Wrapping the encrypted bytes in PEM encoding...");
+            StringBuilder buffer = new StringBuilder();
+            buffer.append("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
+            buffer.append(Base64Utils.encode(encryptedKeyInfo.getEncoded()));
+            buffer.append("\n-----END ENCRYPTED PRIVATE KEY-----\n");
+            String result = buffer.toString();
+
+            logger.exit();
+            return result;
+
+        } catch (IOException | GeneralSecurityException e) {
+            String message = "An unexpected exception occurred while attempting to encode a private key.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
+            throw exception;
+        }
+    }
+
+
+    @Override
+    public PrivateKey decodePrivateKey(String pem, char[] password) {
+        logger.entry();
+        try {
+            logger.debug("Unwrapping the PEM encoding...");
+            String base64Encoded = pem
+                    .replace("-----BEGIN ENCRYPTED PRIVATE KEY-----\n", "")
+                    .replace("\n-----END ENCRYPTED PRIVATE KEY-----\n", "");
+            byte[] encryptedBytes = Base64Utils.decode(base64Encoded);
+	        EncryptedPrivateKeyInfo encryptedKeyInfo = new EncryptedPrivateKeyInfo(encryptedBytes) ;
+
+            logger.debug("Transforming the password into a secret key...");
+            SecretKeyFactory passwordFactory = SecretKeyFactory.getInstance(PASSWORD_ENCODING_TYPE);
+            PBEKeySpec passwordSpec = new PBEKeySpec(password);
+            SecretKey passwordKey = passwordFactory.generateSecret(passwordSpec);
+
+            logger.debug("Decrypting the encrypted bytes from PKCS8 format...");
+            PKCS8EncodedKeySpec pkcs8KeySpec = encryptedKeyInfo.getKeySpec(passwordKey) ;
+            KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
+	        PrivateKey result = keyFactory.generatePrivate(pkcs8KeySpec);
+
+            logger.exit();
+            return result;
+
+        } catch (IOException | GeneralSecurityException e) {
+            String message = "An unexpected exception occurred while attempting to decode a private key.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
+            throw exception;
+        }
     }
 
 
@@ -220,9 +360,9 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.exit();
             return signature;
         } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to sign bytes.", e);
-            logger.error(exception.toString());
+            String message = "An exception occured while trying to sign bytes.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
             throw exception;
         }
     }
@@ -239,17 +379,11 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.exit();
             return isValid;
         } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to validate signed bytes.", e);
-            logger.error(exception.toString());
+            String message = "An exception occured while trying to validate signed bytes.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
             throw exception;
         }
-    }
-
-
-    @Override
-    public String getAsymmetricEncryptionAlgorithm() {
-        return ASYMMETRIC_ENCRYPTION_ALGORITHM;
     }
 
 
@@ -263,9 +397,9 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.exit();
             return encryptedKey;
         } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to encrypt a shared key.", e);
-            logger.error(exception.toString());
+            String message = "An exception occured while trying to encrypt a shared key.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
             throw exception;
         }
     }
@@ -283,9 +417,9 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.exit();
             return sharedKey;
         } catch (GeneralSecurityException e) {
-            RuntimeException exception =
-                    new RuntimeException("An exception occured while trying to decrypt a shared key.", e);
-            logger.error(exception.toString());
+            String message = "An exception occured while trying to decrypt a shared key.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
             throw exception;
         }
     }
