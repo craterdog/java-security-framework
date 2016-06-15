@@ -49,12 +49,7 @@ import javax.crypto.SecretKeyFactory;
 public final class RsaAesMessageCryptex extends MessageCryptex {
 
     static private final String HASH_ALGORITHM = "SHA-256";
-
-    //static private final String PASSWORD_ENCODING_TYPE = "PBKDF2WithHmacSHA1";
-    //static private final String PASSWORD_ENCODING_TYPE = "PBEWithHmacSHA256AndAES_128";
     static private final String PASSWORD_ENCODING_TYPE = "PBEWithSHA1AndDESede";
-    static private final byte[] PASSWORD_SALT = new byte[20];
-    static private final int PASSWORD_ITERATION_COUNT = 1024;
 
     static private final String SYMMETRIC_KEY_TYPE = "AES";
     static private final int SYMMETRIC_KEY_SIZE = 128;
@@ -237,7 +232,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             StringBuilder buffer = new StringBuilder();
             buffer.append("-----BEGIN PUBLIC KEY-----\n");
             buffer.append(Base64Utils.encode(key.getEncoded()));
-            buffer.append("\n-----END PUBLIC KEY-----\n");
+            buffer.append("\n-----END PUBLIC KEY-----");
             String result = buffer.toString();
 
             logger.exit();
@@ -259,7 +254,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.debug("Unwrapping the PEM encoding...");
             String base64Encoded = pem
                     .replace("-----BEGIN PUBLIC KEY-----\n", "")
-                    .replace("\n-----END PUBLIC KEY-----\n", "");
+                    .replace("\n-----END PUBLIC KEY-----", "");
             byte[] keyBytes = Base64Utils.decode(base64Encoded);
 
             logger.debug("Decoding the public key...");
@@ -301,7 +296,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             StringBuilder buffer = new StringBuilder();
             buffer.append("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
             buffer.append(Base64Utils.encode(encryptedKeyInfo.getEncoded()));
-            buffer.append("\n-----END ENCRYPTED PRIVATE KEY-----\n");
+            buffer.append("\n-----END ENCRYPTED PRIVATE KEY-----");
             String result = buffer.toString();
 
             logger.exit();
@@ -323,7 +318,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.debug("Unwrapping the PEM encoding...");
             String base64Encoded = pem
                     .replace("-----BEGIN ENCRYPTED PRIVATE KEY-----\n", "")
-                    .replace("\n-----END ENCRYPTED PRIVATE KEY-----\n", "");
+                    .replace("\n-----END ENCRYPTED PRIVATE KEY-----", "");
             byte[] encryptedBytes = Base64Utils.decode(base64Encoded);
 	        EncryptedPrivateKeyInfo encryptedKeyInfo = new EncryptedPrivateKeyInfo(encryptedBytes) ;
 
