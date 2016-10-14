@@ -27,6 +27,7 @@ import java.security.Signature;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
@@ -37,6 +38,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
+import javax.security.auth.DestroyFailedException;
 
 
 /**
@@ -126,11 +128,13 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             SecretKey sharedKey = keyGenerator.generateKey();
             logger.exit();
             return sharedKey;
+
         } catch (GeneralSecurityException e) {
             String message = "An exception occured while trying to generate a shared key.";
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
         }
     }
 
@@ -150,11 +154,13 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
             logger.exit();
             return cipherOutputStream;
+
         } catch (GeneralSecurityException e) {
             String message = "An exception occured while trying to encrypt a stream.";
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
         }
     }
 
@@ -174,11 +180,13 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
             logger.exit();
             return cipherInputStream;
+
         } catch (GeneralSecurityException e) {
             String message = "An exception occured while trying to decrypt a stream.";
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
         }
     }
 
@@ -216,11 +224,13 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             KeyPair keyPair = keyGenerator.generateKeyPair();
             logger.exit();
             return keyPair;
+
         } catch (GeneralSecurityException e) {
             String message = "An unexpected exception occurred while attempting to generate a new key pair.";
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
         }
     }
 
@@ -243,6 +253,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
         }
     }
 
@@ -270,6 +281,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
         }
     }
 
@@ -277,20 +289,24 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
     @Override
     public String encodePrivateKey(PrivateKey key, char[] password) {
         logger.entry();
+        byte[] keyBytes = null;
         try {
             logger.debug("Transforming the password into a secret key...");
             SecretKeyFactory passwordFactory = SecretKeyFactory.getInstance(PASSWORD_ENCODING_TYPE);
             PBEKeySpec passwordSpec = new PBEKeySpec(password);
             SecretKey passwordKey = passwordFactory.generateSecret(passwordSpec);
+            passwordSpec.clearPassword();
 
             logger.debug("Encrypting the private key using the secret key...");
             Cipher cipher = Cipher.getInstance(PASSWORD_ENCODING_TYPE);
             cipher.init(Cipher.ENCRYPT_MODE, passwordKey);
-            byte[] encryptedBytes = cipher.doFinal(key.getEncoded());
+            keyBytes = key.getEncoded();
+            byte[] encryptedBytes = cipher.doFinal(keyBytes);
 
             logger.debug("Encoding the encrypted bytes in PKCS8 format...");
             AlgorithmParameters params = cipher.getParameters();
 	        EncryptedPrivateKeyInfo encryptedKeyInfo = new EncryptedPrivateKeyInfo(params, encryptedBytes) ;
+            try { passwordKey.destroy(); } catch (DestroyFailedException e) {}
 
             logger.debug("Wrapping the encrypted bytes in PEM encoding...");
             StringBuilder buffer = new StringBuilder();
@@ -307,6 +323,10 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
+        } finally {
+            if (keyBytes != null) Arrays.fill(keyBytes, (byte) 0);
+
         }
     }
 
@@ -326,11 +346,13 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             SecretKeyFactory passwordFactory = SecretKeyFactory.getInstance(PASSWORD_ENCODING_TYPE);
             PBEKeySpec passwordSpec = new PBEKeySpec(password);
             SecretKey passwordKey = passwordFactory.generateSecret(passwordSpec);
+            passwordSpec.clearPassword();
 
             logger.debug("Decrypting the encrypted bytes from PKCS8 format...");
             PKCS8EncodedKeySpec pkcs8KeySpec = encryptedKeyInfo.getKeySpec(passwordKey) ;
             KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
 	        PrivateKey result = keyFactory.generatePrivate(pkcs8KeySpec);
+            try { passwordKey.destroy(); } catch (DestroyFailedException e) {}
 
             logger.exit();
             return result;
@@ -340,6 +362,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
         }
     }
 
@@ -384,38 +407,50 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
     @Override
     public byte[] encryptSharedKey(PublicKey publicKey, SecretKey sharedKey) {
+        byte[] keyBytes = null;
         try {
             logger.entry();
             Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            byte[] encryptedKey = cipher.doFinal(sharedKey.getEncoded());
+            keyBytes = sharedKey.getEncoded();
+            byte[] encryptedKey = cipher.doFinal(keyBytes);
             logger.exit();
             return encryptedKey;
+
         } catch (GeneralSecurityException e) {
             String message = "An exception occured while trying to encrypt a shared key.";
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
+        } finally {
+            if (keyBytes != null) Arrays.fill(keyBytes, (byte) 0);
+
         }
     }
 
 
     @Override
     public SecretKey decryptSharedKey(PrivateKey privateKey, byte[] encryptedKey) {
+        byte[] keyBytes = null;
         try {
             logger.entry();
-            byte[] decryptedKey;
             Cipher cipher = Cipher.getInstance(ASYMMETRIC_ENCRYPTION_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            decryptedKey = cipher.doFinal(encryptedKey);
-            SecretKey sharedKey = new SecretKeySpec(decryptedKey, SYMMETRIC_KEY_TYPE);
+            keyBytes = cipher.doFinal(encryptedKey);
+            SecretKey sharedKey = new SecretKeySpec(keyBytes, SYMMETRIC_KEY_TYPE);
             logger.exit();
             return sharedKey;
+
         } catch (GeneralSecurityException e) {
             String message = "An exception occured while trying to decrypt a shared key.";
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
+        } finally {
+            if (keyBytes != null) Arrays.fill(keyBytes, (byte) 0);
+
         }
     }
 
