@@ -52,6 +52,22 @@ public abstract class MessageCryptex {
 
 
     /**
+     * This method encodes a byte array into a base 64 string where each line is prepended with
+     * an indentation string.
+     *
+     * @param bytes The byte array to be encoded.
+     * @param indentation The indentation string that should be prepended to each line of the output.
+     * @return The base 64 encoded string for those bytes.
+     */
+    public final String encodeBytes(byte[] bytes, String indentation) {
+        logger.entry();
+        String base64String = Base64Utils.encode(bytes, indentation);
+        logger.exit();
+        return base64String;
+    }
+
+
+    /**
      * This method decodes a base 64 string into its original bytes.
      *
      * @param base64String The base 64 encoded string.
@@ -306,7 +322,19 @@ public abstract class MessageCryptex {
      * @param key The public key.
      * @return The corresponding PEM string.
      */
-    public abstract String encodePublicKey(PublicKey key);
+    public final String encodePublicKey(PublicKey key) {
+        return encodePublicKey(key, "");
+    }
+
+
+    /**
+     * This method encodes a public key into a PEM string with a prepended indentation string.
+     *
+     * @param key The public key.
+     * @param indentation The indentation string that should be prepended to each line of the output.
+     * @return The corresponding PEM string.
+     */
+    public abstract String encodePublicKey(PublicKey key, String indentation);
 
 
     /**
@@ -325,7 +353,20 @@ public abstract class MessageCryptex {
      * @param password The password to be used to encrypt the private key.
      * @return The corresponding PEM string.
      */
-    public abstract String encodePrivateKey(PrivateKey key, char[] password);
+    public final String encodePrivateKey(PrivateKey key, char[] password) {
+        return encodePrivateKey(key, password, "");
+    }
+
+
+    /**
+     * This method encodes a private key into a PEM string with a prepended indentation string.
+     *
+     * @param key The private key.
+     * @param password The password to be used to encrypt the private key.
+     * @param indentation The indentation string that should be prepended to each line of the output.
+     * @return The corresponding PEM string.
+     */
+    public abstract String encodePrivateKey(PrivateKey key, char[] password, String indentation);
 
 
     /**

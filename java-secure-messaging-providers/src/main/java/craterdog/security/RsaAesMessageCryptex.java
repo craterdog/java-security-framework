@@ -9,7 +9,6 @@
  ************************************************************************/
 package craterdog.security;
 
-import craterdog.utils.Base64Utils;
 import craterdog.utils.RandomUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -83,7 +82,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             byte[] bytes = (string).getBytes();
             MessageDigest hasher = MessageDigest.getInstance(HASH_ALGORITHM);
             byte[] hash = hasher.digest(bytes);
-            String hashString = Base64Utils.encode(hash);
+            String hashString = encodeBytes(hash);
             logger.exit();
             return hashString;
         } catch (NoSuchAlgorithmException e) {
@@ -236,13 +235,13 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
-    public String encodePublicKey(PublicKey key) {
+    public String encodePublicKey(PublicKey key, String indentation) {
         logger.entry();
         try {
             StringBuilder buffer = new StringBuilder();
-            buffer.append("-----BEGIN PUBLIC KEY-----\n");
-            buffer.append(Base64Utils.encode(key.getEncoded()));
-            buffer.append("\n-----END PUBLIC KEY-----");
+            buffer.append(indentation).append("-----BEGIN PUBLIC KEY-----\n");
+            buffer.append(encodeBytes(key.getEncoded(), indentation));
+            buffer.append("\n").append(indentation).append("-----END PUBLIC KEY-----");
             String result = buffer.toString();
 
             logger.exit();
@@ -264,9 +263,9 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         try {
             logger.debug("Unwrapping the PEM encoding...");
             String base64Encoded = pem
-                    .replace("-----BEGIN PUBLIC KEY-----\n", "")
-                    .replace("\n-----END PUBLIC KEY-----", "");
-            byte[] keyBytes = Base64Utils.decode(base64Encoded);
+                    .replace("-----BEGIN PUBLIC KEY-----", "")
+                    .replace("-----END PUBLIC KEY-----", "");
+            byte[] keyBytes = decodeString(base64Encoded);
 
             logger.debug("Decoding the public key...");
             X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
@@ -287,7 +286,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
-    public String encodePrivateKey(PrivateKey key, char[] password) {
+    public String encodePrivateKey(PrivateKey key, char[] password, String indentation) {
         logger.entry();
         byte[] keyBytes = null;
         try {
@@ -305,14 +304,14 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
             logger.debug("Encoding the encrypted bytes in PKCS8 format...");
             AlgorithmParameters params = cipher.getParameters();
-	        EncryptedPrivateKeyInfo encryptedKeyInfo = new EncryptedPrivateKeyInfo(params, encryptedBytes) ;
+            EncryptedPrivateKeyInfo encryptedKeyInfo = new EncryptedPrivateKeyInfo(params, encryptedBytes) ;
             try { passwordKey.destroy(); } catch (DestroyFailedException e) {}
 
             logger.debug("Wrapping the encrypted bytes in PEM encoding...");
             StringBuilder buffer = new StringBuilder();
-            buffer.append("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
-            buffer.append(Base64Utils.encode(encryptedKeyInfo.getEncoded()));
-            buffer.append("\n-----END ENCRYPTED PRIVATE KEY-----");
+            buffer.append(indentation).append("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
+            buffer.append(encodeBytes(encryptedKeyInfo.getEncoded(), indentation));
+            buffer.append("\n").append(indentation).append("-----END ENCRYPTED PRIVATE KEY-----");
             String result = buffer.toString();
 
             logger.exit();
@@ -325,6 +324,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             throw exception;
 
         } finally {
+            Arrays.fill(password, '\0');
             if (keyBytes != null) Arrays.fill(keyBytes, (byte) 0);
 
         }
@@ -337,10 +337,10 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
         try {
             logger.debug("Unwrapping the PEM encoding...");
             String base64Encoded = pem
-                    .replace("-----BEGIN ENCRYPTED PRIVATE KEY-----\n", "")
-                    .replace("\n-----END ENCRYPTED PRIVATE KEY-----", "");
-            byte[] encryptedBytes = Base64Utils.decode(base64Encoded);
-	        EncryptedPrivateKeyInfo encryptedKeyInfo = new EncryptedPrivateKeyInfo(encryptedBytes) ;
+                    .replace("-----BEGIN ENCRYPTED PRIVATE KEY-----", "")
+                    .replace("-----END ENCRYPTED PRIVATE KEY-----", "");
+            byte[] encryptedBytes = decodeString(base64Encoded);
+            EncryptedPrivateKeyInfo encryptedKeyInfo = new EncryptedPrivateKeyInfo(encryptedBytes) ;
 
             logger.debug("Transforming the password into a secret key...");
             SecretKeyFactory passwordFactory = SecretKeyFactory.getInstance(PASSWORD_ENCODING_TYPE);
@@ -351,7 +351,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             logger.debug("Decrypting the encrypted bytes from PKCS8 format...");
             PKCS8EncodedKeySpec pkcs8KeySpec = encryptedKeyInfo.getKeySpec(passwordKey) ;
             KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
-	        PrivateKey result = keyFactory.generatePrivate(pkcs8KeySpec);
+            PrivateKey result = keyFactory.generatePrivate(pkcs8KeySpec);
             try { passwordKey.destroy(); } catch (DestroyFailedException e) {}
 
             logger.exit();
@@ -362,6 +362,9 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             RuntimeException exception = new RuntimeException(message, e);
             logger.error(message, exception);
             throw exception;
+
+        } finally {
+            Arrays.fill(password, '\0');
 
         }
     }

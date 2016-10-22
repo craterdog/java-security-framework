@@ -75,6 +75,15 @@ public class ExampleCodeTest {
         PrivateKey receiverPrivateKey = receiverPair.getPrivate();
         PublicKey receiverPublicKey = receiverPair.getPublic();
 
+        logger.info("  Encoding the public key.");
+        String pem = cryptex.encodePublicKey(senderPublicKey, "      ");
+        logger.info("    publicKey:\n" + pem + "\n");
+
+        logger.info("  Encoding the private key with password.");
+        char[] password = { 's', 'e', 'c', 'r', 'e', 't' };
+        pem = cryptex.encodePrivateKey(senderPrivateKey, password, "      ");
+        logger.info("    privateKey:\n" + pem + "\n");
+
         logger.info("  Sender generating shared session key...");
         SecretKey sessionKey = cryptex.generateSharedKey();
 
@@ -85,10 +94,10 @@ public class ExampleCodeTest {
         byte[] signature = cryptex.signBytes(senderPrivateKey, encryptedSessionKey);
 
         logger.info("  Sender base 64 encoding the encrypted key and signature...");
-        String encodedSessionKey = cryptex.encodeBytes(encryptedSessionKey);
-        logger.info("    EncodedSessionKey: " + encodedSessionKey);
-        String encodedSignature = cryptex.encodeBytes(signature);
-        logger.info("    EncodedSignature: " + encodedSignature);
+        String encodedSessionKey = cryptex.encodeBytes(encryptedSessionKey, "      ");
+        logger.info("    EncodedSessionKey:\n" + encodedSessionKey + "\n");
+        String encodedSignature = cryptex.encodeBytes(signature, "      ");
+        logger.info("    EncodedSignature:\n" + encodedSignature + "\n");
 
         logger.info("  Sender encrypting the request using session key...");
         String request = "This is a request...";
@@ -114,7 +123,7 @@ public class ExampleCodeTest {
         logger.info("  Receiver decrypting the request using the session key...");
         ByteArrayOutputStream decryptedOutput = new ByteArrayOutputStream();
         cryptex.decryptStream(sessionKey, encryptedInput, decryptedOutput);
-        logger.info("  The decrypted request is: \"{}\"", new String(decryptedOutput.toByteArray()));
+        logger.info("    The decrypted request is: \"{}\"\n", new String(decryptedOutput.toByteArray()));
 
         logger.info("  Receiver handling the request and preparing the response...");
         String response = "This is the response...";
@@ -130,7 +139,7 @@ public class ExampleCodeTest {
         logger.info("  Sender decrypting the response using the session key...");
         decryptedOutput = new ByteArrayOutputStream();
         cryptex.decryptStream(sessionKey, encryptedInput, decryptedOutput);
-        logger.info("    The decrypted response is: \"{}\"", new String(decryptedOutput.toByteArray()));
+        logger.info("    The decrypted response is: \"{}\"\n", new String(decryptedOutput.toByteArray()));
 
 
         logger.info("Round trip message encryption test completed.\n");
