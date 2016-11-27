@@ -103,15 +103,6 @@ public abstract class MessageCryptex {
     // Symmetric (Shared) Key Cryptography
 
     /**
-     * This method returns the password encoding type used for password based encryption (PBE)
-     * used by this cryptex.
-     *
-     * @return The type of the password encoding.
-     */
-    public abstract String getPasswordEncodingType();
-
-
-    /**
      * This method returns the symmetric key type used by this cryptex.
      *
      * @return The type of the symmetric keys.
@@ -347,36 +338,55 @@ public abstract class MessageCryptex {
 
 
     /**
+     * This method returns the password encoding type used for password based encryption (PBE)
+     * used by this cryptex.
+     *
+     * @return The type of the password encoding.
+     */
+    public abstract String getPasswordEncodingType();
+
+
+    /**
+     * This method generates a password (secret) key to be used for encrypting
+     * a private key.
+     *
+     * @param password The password.
+     * @return The password key.
+     */
+    public abstract SecretKey generatePasswordKey(char[] password);
+
+
+    /**
      * This method encodes a private key into a PEM string.
      *
-     * @param key The private key.
-     * @param password The password to be used to encrypt the private key.
+     * @param privateKey The private key.
+     * @param passwordKey The secret key, generated from a password, to be used to encrypt the private key.
      * @return The corresponding PEM string.
      */
-    public final String encodePrivateKey(PrivateKey key, char[] password) {
-        return encodePrivateKey(key, password, "");
+    public final String encodePrivateKey(PrivateKey privateKey, SecretKey passwordKey) {
+        return encodePrivateKey(privateKey, passwordKey, "");
     }
 
 
     /**
      * This method encodes a private key into a PEM string with a prepended indentation string.
      *
-     * @param key The private key.
-     * @param password The password to be used to encrypt the private key.
+     * @param privateKey The private key.
+     * @param passwordKey The secret key, generated from a password, to be used to encrypt the private key.
      * @param indentation The indentation string that should be prepended to each line of the output.
      * @return The corresponding PEM string.
      */
-    public abstract String encodePrivateKey(PrivateKey key, char[] password, String indentation);
+    public abstract String encodePrivateKey(PrivateKey privateKey, SecretKey passwordKey, String indentation);
 
 
     /**
      * This method decodes private key from a PEM string.
      *
      * @param pem The PEM string for the private key.
-     * @param password The password to be used to decrypt the private key.
+     * @param passwordKey The secret key, generated from a password, to be used to decrypt the private key.
      * @return The corresponding key.
      */
-    public abstract PrivateKey decodePrivateKey(String pem, char[] password);
+    public abstract PrivateKey decodePrivateKey(String pem, SecretKey passwordKey);
 
 
     /**
