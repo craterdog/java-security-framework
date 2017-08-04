@@ -6,7 +6,7 @@ like key generation, and encrypting and decrypting data. As with all low level f
 a great deal of flexibility in choosing the algorithms and key sizes to be used for these tasks. However,
 this flexibility can cause a significant amount of confusion for anyone who is not a security expert.
 
-The _Crater Dog Technologies_™ Java Security Framework makes sensible choices for these algorithms based
+The _Crater Dog Technologies™_ Java Security Framework makes sensible choices for these algorithms based
 on the latest research around potential vulnerabilities. It provides a high level framework that is easy
 to use and very secure.
 
