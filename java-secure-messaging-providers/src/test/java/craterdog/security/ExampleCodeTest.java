@@ -81,7 +81,8 @@ public class ExampleCodeTest {
 
         logger.info("  Encoding the private key with password.");
         char[] password = { 's', 'e', 'c', 'r', 'e', 't' };
-        pem = cryptex.encodePrivateKey(senderPrivateKey, password, "      ");
+        SecretKey passwordKey = cryptex.generatePasswordKey(password);
+        pem = cryptex.encodePrivateKey(senderPrivateKey, passwordKey, "      ");
         logger.info("    privateKey:\n" + pem + "\n");
 
         logger.info("  Sender generating shared session key...");

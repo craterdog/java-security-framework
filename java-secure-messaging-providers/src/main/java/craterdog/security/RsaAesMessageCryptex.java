@@ -95,12 +95,6 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
-    public String getPasswordEncodingType() {
-        return PASSWORD_ENCODING_TYPE;
-    }
-
-
-    @Override
     public String getSymmetricKeyType() {
         return SYMMETRIC_KEY_TYPE;
     }
@@ -286,20 +280,44 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
-    public String encodePrivateKey(PrivateKey key, char[] password, String indentation) {
-        logger.entry();
-        byte[] keyBytes = null;
+    public String getPasswordEncodingType() {
+        return PASSWORD_ENCODING_TYPE;
+    }
+
+
+    @Override
+    public SecretKey generatePasswordKey(char[] password) {
         try {
-            logger.debug("Transforming the password into a secret key...");
+            logger.entry();
             SecretKeyFactory passwordFactory = SecretKeyFactory.getInstance(PASSWORD_ENCODING_TYPE);
             PBEKeySpec passwordSpec = new PBEKeySpec(password);
             SecretKey passwordKey = passwordFactory.generateSecret(passwordSpec);
             passwordSpec.clearPassword();
+            logger.exit();
+            return passwordKey;
 
+        } catch (GeneralSecurityException e) {
+            String message = "An unexpected exception occurred while attempting to generate a password key.";
+            RuntimeException exception = new RuntimeException(message, e);
+            logger.error(message, exception);
+            throw exception;
+
+        } finally {
+            Arrays.fill(password, '\u0000');
+
+        }
+    }
+
+
+    @Override
+    public String encodePrivateKey(PrivateKey privateKey, SecretKey passwordKey, String indentation) {
+        logger.entry();
+        byte[] keyBytes = null;
+        try {
             logger.debug("Encrypting the private key using the secret key...");
             Cipher cipher = Cipher.getInstance(PASSWORD_ENCODING_TYPE);
             cipher.init(Cipher.ENCRYPT_MODE, passwordKey);
-            keyBytes = key.getEncoded();
+            keyBytes = privateKey.getEncoded();
             byte[] encryptedBytes = cipher.doFinal(keyBytes);
 
             logger.debug("Encoding the encrypted bytes in PKCS8 format...");
@@ -312,10 +330,10 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             buffer.append(indentation).append("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
             buffer.append(encodeBytes(encryptedKeyInfo.getEncoded(), indentation));
             buffer.append("\n").append(indentation).append("-----END ENCRYPTED PRIVATE KEY-----");
-            String result = buffer.toString();
+            String pem = buffer.toString();
 
             logger.exit();
-            return result;
+            return pem;
 
         } catch (IOException | GeneralSecurityException e) {
             String message = "An unexpected exception occurred while attempting to encode a private key.";
@@ -324,7 +342,6 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             throw exception;
 
         } finally {
-            Arrays.fill(password, '\0');
             if (keyBytes != null) Arrays.fill(keyBytes, (byte) 0);
 
         }
@@ -332,7 +349,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
 
 
     @Override
-    public PrivateKey decodePrivateKey(String pem, char[] password) {
+    public PrivateKey decodePrivateKey(String pem, SecretKey passwordKey) {
         logger.entry();
         try {
             logger.debug("Unwrapping the PEM encoding...");
@@ -342,20 +359,13 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             byte[] encryptedBytes = decodeString(base64Encoded);
             EncryptedPrivateKeyInfo encryptedKeyInfo = new EncryptedPrivateKeyInfo(encryptedBytes) ;
 
-            logger.debug("Transforming the password into a secret key...");
-            SecretKeyFactory passwordFactory = SecretKeyFactory.getInstance(PASSWORD_ENCODING_TYPE);
-            PBEKeySpec passwordSpec = new PBEKeySpec(password);
-            SecretKey passwordKey = passwordFactory.generateSecret(passwordSpec);
-            passwordSpec.clearPassword();
-
             logger.debug("Decrypting the encrypted bytes from PKCS8 format...");
             PKCS8EncodedKeySpec pkcs8KeySpec = encryptedKeyInfo.getKeySpec(passwordKey) ;
             KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_KEY_TYPE);
-            PrivateKey result = keyFactory.generatePrivate(pkcs8KeySpec);
-            try { passwordKey.destroy(); } catch (DestroyFailedException e) {}
+            PrivateKey privateKey = keyFactory.generatePrivate(pkcs8KeySpec);
 
             logger.exit();
-            return result;
+            return privateKey;
 
         } catch (IOException | GeneralSecurityException e) {
             String message = "An unexpected exception occurred while attempting to decode a private key.";
@@ -364,7 +374,7 @@ public final class RsaAesMessageCryptex extends MessageCryptex {
             throw exception;
 
         } finally {
-            Arrays.fill(password, '\0');
+            try { passwordKey.destroy(); } catch (DestroyFailedException e) {}
 
         }
     }
