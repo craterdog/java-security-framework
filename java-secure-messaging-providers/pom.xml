@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.craterdog.maven-parent-poms</groupId>
         <artifactId>java-pojo</artifactId>
-        <version>3.17</version>
+        <version>3.20</version>
         <relativePath />
     </parent>
 
@@ -50,7 +50,7 @@
     </developers>
 
     <properties>
-        <java-general-utilities-version>3.9</java-general-utilities-version>
+        <java-general-utilities-version>3.10</java-general-utilities-version>
     </properties>
 
     <dependencies>
@@ -82,9 +82,9 @@
                         <configuration>
                             <detectJavaApiLink>true</detectJavaApiLink>
                             <links>
-                                <link>http://craterdog.github.io/java-core-interfaces/latest</link>
-                                <link>http://craterdog.github.io/java-general-utilities/latest</link>
-                                <link>http://craterdog.github.io/java-primitive-types/latest</link>
+                                <link>http://craterdog.github.io/java-core-interfaces/latest/</link>
+                                <link>http://craterdog.github.io/java-general-utilities/latest/</link>
+                                <link>http://craterdog.github.io/java-primitive-types/latest/</link>
                             </links>
                         </configuration>
                     </plugin>
