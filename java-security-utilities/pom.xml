@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.craterdog.maven-parent-poms</groupId>
         <artifactId>java-component</artifactId>
-        <version>3.20</version>
+        <version>3.21</version>
         <relativePath />
     </parent>
 
