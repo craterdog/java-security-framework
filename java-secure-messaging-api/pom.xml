@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.craterdog.maven-parent-poms</groupId>
         <artifactId>java-api</artifactId>
-        <version>3.21</version>
+        <version>3.22</version>
         <relativePath />
     </parent>
 
@@ -50,7 +50,7 @@
     </developers>
 
     <properties>
-        <java-general-utilities-version>3.11</java-general-utilities-version>
+        <java-general-utilities-version>3.12</java-general-utilities-version>
     </properties>
 
     <dependencies>
