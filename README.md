@@ -1,5 +1,7 @@
 ![Java Security Framework](https://github.com/craterdog/java-security-framework/blob/master/docs/images/Security.jpg)
 
+# THIS REPOSITORY HAS BEEN ARCHIVED AND IS NO LONGER SUPPORTED
+
 ### A Simple to Use Java Security Framework
 The Java security APIs define a very powerful framework for implementing common security related tasks
 like key generation, and encrypting and decrypting data. As with all low level frameworks, it provides
